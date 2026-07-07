@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solo Empire Insights — Overview</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--muted:#94a3b8;--accent:#3b82f6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--purple:#8b5cf6}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.header{background:linear-gradient(135deg,var(--card) 0%,#0f172a 100%);border-bottom:1px solid var(--border);padding:2rem;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:2rem;font-weight:800;display:flex;align-items:center;gap:.75rem}
+.header .meta{font-size:.875rem;color:var(--muted);display:flex;gap:1.5rem}
+.container{max-width:1400px;margin:0 auto;padding:2rem}
+.grid{display:grid;gap:1.5rem}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(400px,1fr))}
+.card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(0,0,0,.3)}
+.card h3{font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.stat-card{text-align:center;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent)}
+.stat-card .value{font-size:3rem;font-weight:800;line-height:1;margin:.5rem 0}
+.stat-card .label{font-size:.875rem;color:var(--muted)}
+.insight-card{position:relative;padding-left:1rem;border-left:4px solid var(--accent)}
+.insight-card.high{border-left-color:var(--green)}
+.insight-card.medium{border-left-color:var(--yellow)}
+.insight-card.low{border-left-color:var(--muted)}
+.insight-title{font-size:1.125rem;font-weight:700;margin-bottom:.5rem}
+.insight-narrative{color:var(--muted);font-size:.9375rem;margin-bottom:1rem;line-height:1.7}
+.insight-hook{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:.5rem;padding:.75rem 1rem;font-size:.875rem;margin-bottom:1rem}
+.actionability{display:inline-flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:600}
+.actionability-bar{width:100px;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.actionability-fill{height:100%;border-radius:4px;transition:width .3s}
+.data-point{background:rgba(255,255,255,.05);border-radius:.5rem;padding:1rem;margin-top:1rem}
+.data-point h4{font-size:.875rem;color:var(--muted);margin-bottom:.75rem}
+.data-table{width:100%;border-collapse:collapse;font-size:.875rem}
+.data-table th{text-align:left;padding:.5rem .75rem;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border)}
+.data-table td{padding:.5rem .75rem;border-bottom:1px solid rgba(51,65,85,.3)}
+.data-table tr:hover td{background:rgba(51,65,85,.2)}
+.chart-container{position:relative;height:300px;margin-top:1rem}
+.badge{display:inline-block;padding:.25rem .75rem;border-radius:9999px;font-size:.75rem;font-weight:600}
+.badge-high{background:rgba(16,185,129,.2);color:#34d399}
+.badge-medium{background:rgba(245,158,11,.2);color:#fbbf24}
+.badge-low{background:rgba(100,116,139,.2);color:#94a3b8}
+.nav-links{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem}
+.nav-link{padding:.5rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:.5rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:all .15s}
+.nav-link:hover{border-color:var(--accent);background:rgba(59,130,246,.1)}
+.nav-link.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.footer{text-align:center;padding:2rem;color:var(--muted);font-size:.875rem;border-top:1px solid var(--border);margin-top:3rem}
+@media(max-width:768px){.container{padding:1rem}.grid-2,.grid-3{grid-template-columns:1fr}.header h1{font-size:1.5rem}}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>📊 Solo Empire Insights</h1>
+    <p style="color:var(--muted);margin-top:.5rem">11 niches • 18 insights • Actionable intelligence</p>
+  </div>
+  <div class="meta">
+    <span>Generated: 2026-07-07 02:44</span>
+    <a href="index.html" style="color:var(--accent);text-decoration:none">← Back to Overview</a>
+  </div>
+</div>
+
+
+<div class="container">
+  <!-- Summary Stats -->
+  <div class="grid grid-4" style="margin-bottom:2rem">
+    <div class="card stat-card">
+      <div class="value" style="color:var(--accent)">11</div>
+      <div class="label">Niches Analyzed</div>
+    </div>
+    <div class="card stat-card">
+      <div class="value" style="color:var(--green)">18</div>
+      <div class="label">Total Insights</div>
+    </div>
+    <div class="card stat-card">
+      <div class="value" style="color:var(--yellow)">7</div>
+      <div class="label">High Actionability</div>
+    </div>
+    <div class="card stat-card">
+      <div class="value" style="color:var(--purple)">10</div>
+      <div class="label">Top Insights</div>
+    </div>
+  </div>
+
+  <!-- Top Insights Across All Niches -->
+  <div class="card" style="margin-bottom:2rem">
+    <h3>🔥 Top Insights Across All Niches</h3>
+    <div style="display:flex;flex-direction:column;gap:1rem">
+
+      <div class="insight-card high">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">🏦 Top DeFi yield: aerodrome-slipstream/O-USDC at 912.2% APY</div>
+          <div class="actionability">
+            <span>100/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:100%;background:#8b5cf6"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">Highest yield with >$1M TVL: aerodrome-slipstream/O-USDC on Base offering 912.2% APY with $2,019,468 TVL.</div>
+        <div class="insight-hook">🏦 DeFi alert: 912% APY on Base — is it safe?</div>
+      </div>
+
+      <div class="insight-card high">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">💰 Hot opportunity: elder-plinius/T3MP3ST: autonomous red teaming platform; mult (score: 100)</div>
+          <div class="actionability">
+            <span>100/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:100%;background:#10b981"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">Top-scoring opportunity: elder-plinius/T3MP3ST: autonomous red teaming platform; mult in ai-content with a trend score of 100/100.</div>
+        <div class="insight-hook">💰 Trending now: elder-plinius/T3MP3ST: autonomous red teaming platform; mult — score 100/100</div>
+      </div>
+
+      <div class="insight-card high">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">✈️ Cheapest flight: BKK-SGN at ฿6,585</div>
+          <div class="actionability">
+            <span>85/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:85%;background:#f59e0b"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">Best deal right now: BKK-SGN at ฿6,585. Tracked routes: 4.</div>
+        <div class="insight-hook">✈️ Deal alert: BKK-SGN for just ฿6,585</div>
+      </div>
+
+      <div class="insight-card high">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">💼 Top job: Software Engineer Identity & Access at Patreon — $189k - $255k</div>
+          <div class="actionability">
+            <span>80/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:80%;background:#06b6d4"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">Highest-paying role right now: Software Engineer Identity & Access at Patreon offering $189k - $255k.</div>
+        <div class="insight-hook">💰 Patreon is paying $189k - $255k for Software Engineer Identity & Access</div>
+      </div>
+
+      <div class="insight-card high">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">🔥 822 new hot repos appeared this week</div>
+          <div class="actionability">
+            <span>75/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:75%;background:#181717"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">New repos with 100+ stars: DietrichGebert/ponytail, DietrichGebert/ponytail, deepseek-ai/DeepSpec.</div>
+        <div class="insight-hook">🆕 822 new repos hit trending — early mover opportunity</div>
+      </div>
+
+      <div class="insight-card high">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">📈 All portfolio stocks in the green</div>
+          <div class="actionability">
+            <span>70/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:70%;background:#3b82f6"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">All 9 tracked stocks are up today — rare broad-based rally.</div>
+        <div class="insight-hook">🟢 Everything's up — what's driving the rally?</div>
+      </div>
+
+      <div class="insight-card high">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">💼 'python' is most in-demand skill with 113 jobs</div>
+          <div class="actionability">
+            <span>70/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:70%;background:#06b6d4"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">Top skills by job count: python (113), react (73), typescript (35), backend (30), full-stack (15).</div>
+        <div class="insight-hook">🎯 Hottest skill: python — 113 open roles</div>
+      </div>
+
+      <div class="insight-card medium">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">🔥 Top trending: pewdiepie-archdaemon/odysseus with 72,276 stars</div>
+          <div class="actionability">
+            <span>65/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:65%;background:#181717"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">pewdiepie-archdaemon/odysseus (Python) is the hottest repo right now with 72,276 stars. Self-hosted AI workspace. .</div>
+        <div class="insight-hook">🔥 pewdiepie-archdaemon/odysseus is blowing up — 72,276 stars and counting</div>
+      </div>
+
+      <div class="insight-card medium">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">💰 Ai Content dominates with 12 hot opportunities</div>
+          <div class="actionability">
+            <span>60/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:60%;background:#10b981"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">By category: ai content (12), tcg (5), trending products (4).</div>
+        <div class="insight-hook">📊 Where the money is: Ai Content</div>
+      </div>
+
+      <div class="insight-card medium">
+        <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:.5rem">
+          <div class="insight-title">🏦 Base leads with 54.4% average APY</div>
+          <div class="actionability">
+            <span>55/100</span>
+            <div class="actionability-bar">
+              <div class="actionability-fill" style="width:55%;background:#8b5cf6"></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-narrative">Average yields by chain: Base (54.4%), Arbitrum (11.9%), Ethereum (11.3%).</div>
+        <div class="insight-hook">🔗 Best chain for yields: Base at 54% avg</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Niche Overview Grid -->
+  <div class="grid grid-3">
+
+    <a href="crypto.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#f7931a">₿ Crypto Markets</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">1</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#f7931a">0</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        ? dropped 0.0% in 24h
+      </div>
+    </a>
+
+    <a href="exchange_rates.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#10b981">💱 Exchange Rates</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">1</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#10b981">40</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        THB exchange rates: 10 currencies tracked
+      </div>
+    </a>
+
+    <a href="stocks.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#3b82f6">📈 Stock Portfolio</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">2</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#3b82f6">55</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        All portfolio stocks in the green
+      </div>
+    </a>
+
+    <a href="defi.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#8b5cf6">🏦 DeFi Yields</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">2</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#8b5cf6">78</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        Top DeFi yield: aerodrome-slipstream/O-USDC at 912.2% APY
+      </div>
+    </a>
+
+    <a href="github_trending.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#181717">🔥 GitHub Trending</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">3</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#181717">63</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        822 new hot repos appeared this week
+      </div>
+    </a>
+
+    <a href="jobs.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#06b6d4">💼 Job Market</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">3</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#06b6d4">60</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        Top job: Software Engineer Identity & Access at Patreon — $189k - $255k
+      </div>
+    </a>
+
+    <a href="flights.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#f59e0b">✈️ Flight Prices</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">1</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#f59e0b">85</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        Cheapest flight: BKK-SGN at ฿6,585
+      </div>
+    </a>
+
+    <a href="opportunities.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#10b981">💰 Money Opportunities</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">2</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#10b981">80</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        Hot opportunity: elder-plinius/T3MP3ST: autonomous red teaming platform; mult (score: 100)
+      </div>
+    </a>
+
+    <a href="property.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#ef4444">🏠 Real Estate</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">1</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#ef4444">35</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        84 property listings — condo_sale_bkk most common
+      </div>
+    </a>
+
+    <a href="seo.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#6366f1">🔍 SEO Rankings</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">1</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#6366f1">25</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        Tracking 8 keywords for SEO
+      </div>
+    </a>
+
+    <a href="ai_tools.html" class="card" style="text-decoration:none;color:inherit">
+      <h3 style="color:#8b5cf6">🤖 AI Tools</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div>
+          <div style="font-size:2rem;font-weight:800">1</div>
+          <div style="font-size:.75rem;color:var(--muted)">insights</div>
+        </div>
+        <div>
+          <div style="font-size:1.5rem;font-weight:700;color:#8b5cf6">50</div>
+          <div style="font-size:.75rem;color:var(--muted)">avg score</div>
+        </div>
+      </div>
+      <div style="font-size:.875rem;color:var(--muted);line-height:1.5">
+        9 AI tools tracked across 2 categories
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Chart: Insights by Niche -->
+  <div class="card" style="margin-top:2rem">
+    <h3>📊 Insights Distribution by Niche</h3>
+    <div class="chart-container">
+      <canvas id="niche-chart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Solo Empire Insights Engine • Layer 2: Content Generation
+</div>
+
+<script>
+const ctx = document.getElementById('niche-chart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['Crypto Markets', 'Exchange Rates', 'Stock Portfolio', 'DeFi Yields', 'GitHub Trending', 'Job Market', 'Flight Prices', 'Money Opportunities', 'Real Estate', 'SEO Rankings', 'AI Tools'],
+    datasets: [{
+      label: 'Insights',
+      data: [1, 1, 2, 2, 3, 3, 1, 2, 1, 1, 1],
+      backgroundColor: ['#f7931a', '#10b981', '#3b82f6', '#8b5cf6', '#181717', '#06b6d4', '#f59e0b', '#10b981', '#ef4444', '#6366f1', '#8b5cf6'],
+      borderRadius: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,.3)' } },
+      x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>
