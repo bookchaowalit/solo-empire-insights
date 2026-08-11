@@ -1,0 +1,37 @@
+{
+  "schema_version": "opportunity.v1",
+  "source": "book-opportunity-intelligence",
+  "retrieved_at": "2026-08-01T12:00:00Z",
+  "data_status": "stale",
+  "items": [
+    {
+      "title": "Show HN: AI agent builder",
+      "category": "ai-content",
+      "source": "Hacker News",
+      "price": "",
+      "url": "https://news.ycombinator.com/item?id=1",
+      "trend_score": "85",
+      "competition_level": "medium",
+      "notes": "HN story",
+      "scraped_at": "2026-08-01 12:00:00",
+      "score_delta": "0",
+      "trend_direction": "stable",
+      "record_id": "hash:opp0"
+    },
+    {
+      "title": "New OSS automation tool",
+      "category": "ai-content",
+      "source": "GitHub Trending",
+      "price": "",
+      "url": "https://github.com/example/tool",
+      "trend_score": "78",
+      "competition_level": "low",
+      "notes": "New repo",
+      "scraped_at": "2026-08-01 12:00:00",
+      "score_delta": "5",
+      "trend_direction": "up",
+      "record_id": "hash:opp1"
+    }
+  ],
+  "next_cursor": null
+}

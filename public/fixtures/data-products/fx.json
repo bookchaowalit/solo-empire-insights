@@ -1,0 +1,31 @@
+{
+  "schema_version": "fx.v1",
+  "source": "book-fx-data",
+  "retrieved_at": "2026-08-01T12:00:00Z",
+  "data_status": "stale",
+  "items": [
+    {
+      "date": "2026-08-01",
+      "base": "THB",
+      "currency": "USD",
+      "rate": "0.028",
+      "inverse": "35.71",
+      "trend_7d": "stable",
+      "trend_change_pct": "0.1",
+      "updated_at": "2026-08-01 12:00:00",
+      "record_id": "THB:USD"
+    },
+    {
+      "date": "2026-08-01",
+      "base": "THB",
+      "currency": "EUR",
+      "rate": "0.026",
+      "inverse": "38.46",
+      "trend_7d": "stable",
+      "trend_change_pct": "-0.2",
+      "updated_at": "2026-08-01 12:00:00",
+      "record_id": "THB:EUR"
+    }
+  ],
+  "next_cursor": null
+}

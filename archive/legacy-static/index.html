@@ -4,19 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="data-products-fixture-base" content="fixtures/data-products/" />
-  <meta name="description" content="Solo Empire Insights — free-only consumer of local data-product APIs on ports 8101–8108 with offline fixture fallback." />
   <title>Solo Empire Insights — Data Products</title>
   <link rel="stylesheet" href="css/insights.css" />
 </head>
 <body>
-  <a class="skip-link" href="#main">Skip to content</a>
-  <header class="header">
+  <div class="header">
     <h1>Solo Empire Insights</h1>
     <p>Consumer of free-only local data-product APIs (ports 8101–8108)</p>
-  </header>
-  <main id="main" class="container">
-    <nav class="nav-links" aria-label="Data products">
-      <a class="nav-link active" href="index.html" aria-current="page">Overview</a>
+  </div>
+  <div class="container">
+    <div class="nav-links">
+      <a class="nav-link active" href="index.html">Overview</a>
       <a class="nav-link" href="crypto.html">Crypto</a>
       <a class="nav-link" href="stocks.html">Stocks</a>
       <a class="nav-link" href="fx.html">FX</a>
@@ -25,17 +23,17 @@
       <a class="nav-link" href="seo.html">SEO</a>
       <a class="nav-link" href="ai_tools.html">AI Tools</a>
       <a class="nav-link" href="opportunities.html">Opportunities</a>
-    </nav>
+    </div>
     <p class="policy">
       Policy: <code>FREE_ONLY=true</code> · no paid providers · no external writes ·
       consumers never scrape upstream. Offline demo:
       <a href="?fixtures=1">?fixtures=1</a>
     </p>
     <div id="dashboard-root"></div>
-  </main>
-  <footer class="footer">
+  </div>
+  <div class="footer">
     Read-only GET /v1/records · sanitized fixture fallback · no scraper imports
-  </footer>
+  </div>
   <script src="js/data-products-browser.js"></script>
   <script>
     DataProducts.mountDashboard(document.getElementById("dashboard-root"));

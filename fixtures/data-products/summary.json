@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-08-01T12:00:00Z",
+  "mode": "fixture",
+  "free_only": true,
+  "allow_external_writes": false,
+  "products": [
+    {
+      "id": "crypto",
+      "name": "Crypto Markets",
+      "icon": "\u20bf",
+      "repo": "book-crypto-data",
+      "port": 8101,
+      "schema_version": "crypto.v1",
+      "record_count": 2,
+      "data_status": "stale",
+      "retrieved_at": "2026-08-01T12:00:00Z",
+      "status": "fixture"
+    },
+    {
+      "id": "stocks",
+      "name": "Stock Portfolio",
+      "icon": "\ud83d\udcc8",
+      "repo": "book-stock-data",
+      "port": 8102,
+      "schema_version": "stock.v1",
+      "record_count": 2,
+      "data_status": "stale",
+      "retrieved_at": "2026-08-01T12:00:00Z",
+      "status": "fixture"
+    },
+    {
+      "id": "fx",
+      "name": "Exchange Rates",
+      "icon": "\ud83d\udcb1",
+      "repo": "book-fx-data",
+      "port": 8103,
+      "schema_version": "fx.v1",
+      "record_count": 2,
+      "data_status": "stale",
+      "retrieved_at": "2026-08-01T12:00:00Z",
+      "status": "fixture"
+    },
+    {
+      "id": "defi",
+      "name": "DeFi Yields",
+      "icon": "\ud83c\udfe6",
+      "repo": "book-defi-data",
+      "port": 8104,
+      "schema_version": "defi.v1",
+      "record_count": 2,
+      "data_status": "stale",
+      "retrieved_at": "2026-08-01T12:00:00Z",
+      "status": "fixture"
+    },
+    {
+      "id": "flights",
+      "name": "Flight Prices",
+      "icon": "\u2708\ufe0f",
+      "repo": "book-flight-data",
+      "port": 8105,
+      "schema_version": "flight.v1",
+      "record_count": 2,
+      "data_status": "stale",
+      "retrieved_at": "2026-08-01T12:00:00Z",
+      "status": "fixture"
+    },
+    {
+      "id": "seo",
+      "name": "SEO Rankings",
+      "icon": "\ud83d\udd0d",
+      "repo": "book-seo-data",
+      "port": 8106,
+      "schema_version": "seo.v1",
+      "record_count": 2,
+      "data_status": "stale",
+      "retrieved_at": "2026-08-01T12:00:00Z",
+      "status": "fixture"
+    },
+    {
+      "id": "ai_tools",
+      "name": "AI Tools",
+      "icon": "\ud83e\udd16",
+      "repo": "book-ai-tools-data",
+      "port": 8107,
+      "schema_version": "ai_tools.v1",
+      "record_count": 2,
+      "data_status": "stale",
+      "retrieved_at": "2026-08-01T12:00:00Z",
+      "status": "fixture"
+    },
+    {
+      "id": "opportunities",
+      "name": "Opportunities",
+      "icon": "\ud83d\udcb0",
+      "repo": "book-opportunity-intelligence",
+      "port": 8108,
+      "schema_version": "opportunity.v1",
+      "record_count": 2,
+      "data_status": "stale",
+      "retrieved_at": "2026-08-01T12:00:00Z",
+      "status": "fixture"
+    }
+  ]
+}

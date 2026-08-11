@@ -1,0 +1,16 @@
+{
+  "name": "solo-empire-insights",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Consumer for free-only local data-product APIs (ports 8101–8108).",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/**/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build:browser": "node scripts/build-browser.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.8.0"
+  }
+}

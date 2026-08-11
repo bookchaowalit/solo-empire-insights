@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Markets — Solo Empire Insights</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--muted:#94a3b8;--accent:#3b82f6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--purple:#8b5cf6}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.header{background:linear-gradient(135deg,var(--card) 0%,#0f172a 100%);border-bottom:1px solid var(--border);padding:2rem;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:2rem;font-weight:800;display:flex;align-items:center;gap:.75rem}
+.header .meta{font-size:.875rem;color:var(--muted);display:flex;gap:1.5rem}
+.container{max-width:1400px;margin:0 auto;padding:2rem}
+.grid{display:grid;gap:1.5rem}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(400px,1fr))}
+.card{background:var(--card);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(0,0,0,.3)}
+.card h3{font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.stat-card{text-align:center;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent)}
+.stat-card .value{font-size:3rem;font-weight:800;line-height:1;margin:.5rem 0}
+.stat-card .label{font-size:.875rem;color:var(--muted)}
+.insight-card{position:relative;padding-left:1rem;border-left:4px solid var(--accent)}
+.insight-card.high{border-left-color:var(--green)}
+.insight-card.medium{border-left-color:var(--yellow)}
+.insight-card.low{border-left-color:var(--muted)}
+.insight-title{font-size:1.125rem;font-weight:700;margin-bottom:.5rem}
+.insight-narrative{color:var(--muted);font-size:.9375rem;margin-bottom:1rem;line-height:1.7}
+.insight-hook{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:.5rem;padding:.75rem 1rem;font-size:.875rem;margin-bottom:1rem}
+.actionability{display:inline-flex;align-items:center;gap:.5rem;font-size:.875rem;font-weight:600}
+.actionability-bar{width:100px;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.actionability-fill{height:100%;border-radius:4px;transition:width .3s}
+.data-point{background:rgba(255,255,255,.05);border-radius:.5rem;padding:1rem;margin-top:1rem}
+.data-point h4{font-size:.875rem;color:var(--muted);margin-bottom:.75rem}
+.data-table{width:100%;border-collapse:collapse;font-size:.875rem}
+.data-table th{text-align:left;padding:.5rem .75rem;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border)}
+.data-table td{padding:.5rem .75rem;border-bottom:1px solid rgba(51,65,85,.3)}
+.data-table tr:hover td{background:rgba(51,65,85,.2)}
+.chart-container{position:relative;height:300px;margin-top:1rem}
+.badge{display:inline-block;padding:.25rem .75rem;border-radius:9999px;font-size:.75rem;font-weight:600}
+.badge-high{background:rgba(16,185,129,.2);color:#34d399}
+.badge-medium{background:rgba(245,158,11,.2);color:#fbbf24}
+.badge-low{background:rgba(100,116,139,.2);color:#94a3b8}
+.nav-links{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem}
+.nav-link{padding:.5rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:.5rem;text-decoration:none;color:var(--text);font-size:.875rem;transition:all .15s}
+.nav-link:hover{border-color:var(--accent);background:rgba(59,130,246,.1)}
+.nav-link.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.footer{text-align:center;padding:2rem;color:var(--muted);font-size:.875rem;border-top:1px solid var(--border);margin-top:3rem}
+@media(max-width:768px){.container{padding:1rem}.grid-2,.grid-3{grid-template-columns:1fr}.header h1{font-size:1.5rem}}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>₿ Crypto Markets</h1>
+    <p style="color:var(--muted);margin-top:.5rem">1 insights • 20 data points • Avg score: 0/100</p>
+  </div>
+  <div class="meta">
+    <span>Generated: 2026-07-07 02:44</span>
+    <a href="index.html" style="color:var(--accent);text-decoration:none">← Back to Overview</a>
+  </div>
+</div>
+
+
+<div class="container">
+  <!-- Navigation -->
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">← Overview</a>
+    <a href="exchange_rates.html" class="nav-link">💱 Exchange Rates</a>
+    <a href="stocks.html" class="nav-link">📈 Stock Portfolio</a>
+    <a href="defi.html" class="nav-link">🏦 DeFi Yields</a>
+    <a href="github_trending.html" class="nav-link">🔥 GitHub Trending</a>
+    <a href="jobs.html" class="nav-link">💼 Job Market</a>
+    <a href="flights.html" class="nav-link">✈️ Flight Prices</a>
+    <a href="opportunities.html" class="nav-link">💰 Money Opportunities</a>
+    <a href="property.html" class="nav-link">🏠 Real Estate</a>
+    <a href="seo.html" class="nav-link">🔍 SEO Rankings</a>
+    <a href="ai_tools.html" class="nav-link">🤖 AI Tools</a>
+
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-4" style="margin-bottom:2rem">
+    <div class="card stat-card">
+      <div class="value" style="color:#f7931a">1</div>
+      <div class="label">Insights</div>
+    </div>
+    <div class="card stat-card">
+      <div class="value" style="color:var(--green)">0</div>
+      <div class="label">High Actionability</div>
+    </div>
+    <div class="card stat-card">
+      <div class="value" style="color:var(--yellow)">0</div>
+      <div class="label">Avg Score</div>
+    </div>
+    <div class="card stat-card">
+      <div class="value" style="color:var(--accent)">20</div>
+      <div class="label">Data Points</div>
+    </div>
+  </div>
+
+  <!-- Insights List -->
+  <div style="display:flex;flex-direction:column;gap:1.5rem">
+
+    <div class="card insight-card low">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:1rem">
+        <div class="insight-title">? dropped 0.0% in 24h</div>
+        <div class="actionability">
+          <span>0/100</span>
+          <div class="actionability-bar">
+            <div class="actionability-fill" style="width:0%;background:#f7931a"></div>
+          </div>
+        </div>
+      </div>
+      <div class="insight-narrative">? is now at $6.90, losing 0.0% in the last 24 hours.</div>
+      <div class="insight-hook">📈 ? moves 0.0% — here's what it means</div>
+<div class="data-point"><h4>📊 Key Data</h4><div style="margin-bottom:.5rem"><strong>coin:</strong> ?</div><div style="margin-bottom:.5rem"><strong>price:</strong> 6.9</div><div style="margin-bottom:.5rem"><strong>change_pct:</strong> 0.0</div></div>
+    </div>
+
+  </div>
+
+  <!-- Data Visualization -->
+  <div class="card" style="margin-top:2rem">
+    <h3>📊 Actionability Scores</h3>
+    <div class="chart-container">
+      <canvas id="score-chart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Crypto Markets • Solo Empire Insights Engine
+</div>
+
+<script>
+const ctx = document.getElementById('score-chart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: ['? dropped 0.0% in 24h'],
+    datasets: [{
+      label: 'Actionability Score',
+      data: [0],
+      backgroundColor: '#f7931a',
+      borderRadius: 8
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { beginAtZero: true, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51,65,85,.3)' } },
+      y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="data-products-fixture-base" content="fixtures/data-products/" />
-  <meta name="description" content="Flight Prices — Solo Empire Insights data-product consumer (local free-only API)." />
-  <title>Flight Prices — Solo Empire Insights</title>
+  <meta name="description" content="Exchange Rates — Solo Empire Insights data-product consumer (local free-only API)." />
+  <title>Exchange Rates — Solo Empire Insights</title>
   <link rel="stylesheet" href="css/insights.css" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="header">
-    <h1>Flight Prices</h1>
+    <h1>Exchange Rates</h1>
     <p>Live records from local data-product API envelope · free-only · no external writes</p>
   </header>
   <main id="main" class="container">
@@ -19,9 +19,9 @@
       <a class="nav-link" href="index.html">Overview</a>
       <a class="nav-link" href="crypto.html">Crypto</a>
       <a class="nav-link" href="stocks.html">Stocks</a>
-      <a class="nav-link" href="fx.html">FX</a>
+      <a class="nav-link active" href="fx.html" aria-current="page">FX</a>
       <a class="nav-link" href="defi.html">DeFi</a>
-      <a class="nav-link active" href="flights.html" aria-current="page">Flights</a>
+      <a class="nav-link" href="flights.html">Flights</a>
       <a class="nav-link" href="seo.html">SEO</a>
       <a class="nav-link" href="ai_tools.html">AI Tools</a>
       <a class="nav-link" href="opportunities.html">Opportunities</a>
@@ -29,10 +29,10 @@
     <p class="policy">Offline: <a href="?fixtures=1">?fixtures=1</a> · free-only · no external writes · GET /v1/records only</p>
     <div id="product-root"></div>
   </main>
-  <footer class="footer">Flight Prices · Solo Empire Insights consumer</footer>
+  <footer class="footer">Exchange Rates · Solo Empire Insights consumer</footer>
   <script src="js/data-products-browser.js"></script>
   <script>
-    DataProducts.mountProductPage('flights', document.getElementById("product-root"));
+    DataProducts.mountProductPage('fx', document.getElementById("product-root"));
   </script>
 </body>
 </html>
