@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Consumer for free-only local data-product APIs (ports 8101–8108).",
+  "description": "Consumer for free-only local data-product APIs (ports 8101–8110).",
   "scripts": {
     "test": "node --experimental-strip-types --test tests/**/*.test.ts",
     "typecheck": "tsc --noEmit",

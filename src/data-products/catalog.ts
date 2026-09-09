@@ -49,7 +49,7 @@ export const DATA_PRODUCT_CATALOG: readonly ProductDefinition[] = [
   },
   {
     id: "seo",
-    title: "SEO Rankings",
+    title: "SEO Provenance",
     icon: "🔍",
     repo: "book-seo-data",
     schemaVersion: "seo.v1",
@@ -66,13 +66,22 @@ export const DATA_PRODUCT_CATALOG: readonly ProductDefinition[] = [
     baseUrl: "http://127.0.0.1:8107",
   },
   {
-    id: "opportunities",
-    title: "Opportunities",
-    icon: "💰",
-    repo: "book-opportunity-intelligence",
-    schemaVersion: "opportunity.v1",
+    id: "news",
+    title: "News Signals",
+    icon: "📰",
+    repo: "book-news-scraping",
+    schemaVersion: "news.v1",
     port: 8108,
     baseUrl: "http://127.0.0.1:8108",
+  },
+  {
+    id: "discovery",
+    title: "Technology Discovery",
+    icon: "🧭",
+    repo: "book-discovery-data",
+    schemaVersion: "discovery.v1",
+    port: 8110,
+    baseUrl: "http://127.0.0.1:8110",
   },
 ] as const;
 

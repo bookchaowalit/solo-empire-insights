@@ -1,11 +1,12 @@
 # Solo Empire Insights
 
-Consumer application for the eight free-only **data-product APIs**.
+Consumer application for the seven frozen free-only **data-product APIs** plus
+the additive `news.v1` and `discovery.v1` APIs.
 
 This repo no longer scrapes upstream providers and does not import legacy
 scraper modules or read legacy scraper CSV paths. It only:
 
-1. calls local read-only HTTP APIs on ports **8101–8108**, or
+1. calls local read-only HTTP APIs on ports **8101–8110**, or
 2. renders sanitized fixture envelopes for offline demos.
 
 ## Data products
@@ -19,7 +20,8 @@ scraper modules or read legacy scraper CSV paths. It only:
 | Flights | 8105 | `flight.v1` | `book-flight-data` |
 | SEO | 8106 | `seo.v1` | `book-seo-data` |
 | AI Tools | 8107 | `ai_tools.v1` | `book-ai-tools-data` |
-| Opportunities | 8108 | `opportunity.v1` | `book-opportunity-intelligence` |
+| News Signals | 8108 | `news.v1` | `book-news-scraping` |
+| Technology Discovery | 8110 | `discovery.v1` | `book-discovery-data` |
 
 Expected envelope:
 
@@ -37,20 +39,69 @@ Expected envelope:
 ## Development
 
 ```bash
-# Start all free-only local APIs 8101–8108 (fixture/local data only)
-python3 ../../book-apps/tools/book-opportunity-intelligence/scripts/start_local_data_apis.py
+# From the Solo Empire root, validate then replay approved captures.
+task scraping:ingest -- --validate-only
+task scraping:ingest
+
+# Start the domain APIs (including news) plus Track B jobs (:8109) and keep them running.
+task scraping:stack
+
+# Or smoke-check all APIs and stop them automatically.
+task scraping:stack -- --check
 
 # Offline demo (no network, fixtures only)
-python3 -m http.server 4173
-# open http://127.0.0.1:4173/?fixtures=1
+python3 -m http.server 4178 --bind 127.0.0.1
+# Run from this Insights repository; open http://127.0.0.1:4178/?fixtures=1
 
 # Live local APIs (same server, no ?fixtures=1)
-# open http://127.0.0.1:4173/
-# Domain APIs allow CORS only for http://127.0.0.1:* and http://localhost:*
+# open http://127.0.0.1:4178/
+# By default, domain APIs allow CORS only for http://127.0.0.1:* and
+# http://localhost:*. For a hosted frontend, set the same explicit origin in
+# each API's CORS_ALLOWED_ORIGINS environment variable.
 
 # Automated browser-consumer checks (APIs must be up)
 node scripts/verify-browser-consumers.mjs
 ```
+
+Replay defaults to the isolated, Git-ignored
+`data/lake-local/scraping-captures-v2` lake for crypto, stocks, FX, DeFi, and
+approved SEO owned-page provenance, and approved news RSS/Atom captures.
+The stack uses that same lake. Existing batches in `data/lake` are preserved;
+they are not automatically migrated or overwritten. Use `--lake-uri` on both
+commands to select another reviewed lake. Local lineage files are unchanged
+unless replay explicitly receives `--update-lineage` after reconciliation.
+The helper imports existing captures only: it does not schedule upstream
+collection. Run it again after the approved scrapers update their exports.
+
+Flights and AI tools may return empty on this isolated stack. Flights require
+a permitted source. SEO is now mapped as owned-page provenance: reachability,
+title, canonical URL, HTTP status, and capture time; it does not claim SERP
+rankings. AI tools still require reuse permission review.
+Jobs use a separate internal ingestion workflow. API health alone does not
+mean these products contain usable data. `--validate-only --product seo`
+checks file structure without granting publication permission.
+
+For the internal Jobs data boundary, use `task scraping:jobs:ingest --
+--dry-run` first, then `task scraping:jobs:ingest`. Verify it with
+`task data:job:readiness -- --data-lake-uri
+$(pwd)/data/lake-local/scraping-captures-v2 --dataset job_postings --dataset
+job_matches --dataset job_leads`. Jobs are served on `:8109` with `job.v1`;
+they are not included in this public seven-product UI because the contract is
+classified `internal` and may contain contact/application fields.
+
+An immutable-batch conflict is a failed replay, not a successful refresh.
+Do not delete old batches to bypass it: replay into an isolated lake, compare
+records/history and timestamps, then explicitly select that lake for serving.
+
+For a hosted frontend, set URL-only public variables in the frontend runtime:
+`NEXT_PUBLIC_DATA_PRODUCT_URL_CRYPTO`, `NEXT_PUBLIC_DATA_PRODUCT_URL_STOCKS`,
+`NEXT_PUBLIC_DATA_PRODUCT_URL_FX`, `NEXT_PUBLIC_DATA_PRODUCT_URL_DEFI`,
+`NEXT_PUBLIC_DATA_PRODUCT_URL_FLIGHTS`, `NEXT_PUBLIC_DATA_PRODUCT_URL_SEO`, and
+`NEXT_PUBLIC_DATA_PRODUCT_URL_AI_TOOLS`, and
+`NEXT_PUBLIC_DATA_PRODUCT_URL_DISCOVERY`. Keep API tokens server-side; all
+domain APIs are read-only and still require their own lake configuration.
+The static HTML consumer accepts the equivalent URL-only map as
+`window.DATA_PRODUCT_URLS` before loading `js/data-products-browser.js`.
 
 Typed client (Node/TypeScript):
 

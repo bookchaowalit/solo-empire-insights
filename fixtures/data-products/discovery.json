@@ -1,0 +1,33 @@
+{
+  "schema_version": "discovery.v1",
+  "source": "book-discovery-data",
+  "retrieved_at": "2026-09-08T00:00:00Z",
+  "data_status": "fixture",
+  "next_cursor": null,
+  "items": [
+    {
+      "record_id": "github_trending|demo-repository",
+      "signal_id": "demo-repository",
+      "source": "github_trending",
+      "signal_kind": "repository",
+      "title": "Example signal repository",
+      "canonical_url": "https://github.com/example/signal-repository",
+      "publisher": "GitHub",
+      "captured_at": "2026-09-08T00:00:00Z",
+      "capture_kind": "current_snapshot",
+      "attribution_required": true
+    },
+    {
+      "record_id": "hackernews|demo-story",
+      "signal_id": "demo-story",
+      "source": "hackernews",
+      "signal_kind": "story",
+      "title": "Example developer discussion",
+      "canonical_url": "https://news.ycombinator.com/item?id=demo-story",
+      "publisher": "Hacker News",
+      "captured_at": "2026-09-08T00:00:00Z",
+      "capture_kind": "current_snapshot",
+      "attribution_required": true
+    }
+  ]
+}

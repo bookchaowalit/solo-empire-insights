@@ -4,15 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="data-products-fixture-base" content="fixtures/data-products/" />
-  <meta name="description" content="Opportunities — Solo Empire Insights data-product consumer (local free-only API)." />
-  <title>Opportunities — Solo Empire Insights</title>
+  <meta name="description" content="News Signals — attributed RSS article captures from the local news.v1 API." />
+  <title>News Signals — Solo Empire Insights</title>
   <link rel="stylesheet" href="css/insights.css" />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="header">
-    <h1>Opportunities</h1>
-    <p>Live records from local data-product API envelope · free-only · no external writes</p>
+    <h1>News Signals</h1>
+    <p>Attributed publisher RSS captures from the local news.v1 API</p>
   </header>
   <main id="main" class="container">
     <nav class="nav-links" aria-label="Data products">
@@ -24,15 +24,15 @@
       <a class="nav-link" href="flights.html">Flights</a>
       <a class="nav-link" href="seo.html">SEO</a>
       <a class="nav-link" href="ai_tools.html">AI Tools</a>
-      <a class="nav-link active" href="opportunities.html" aria-current="page">Opportunities</a>
+      <a class="nav-link active" href="news.html" aria-current="page">News</a>
     </nav>
-    <p class="policy">Offline: <a href="?fixtures=1">?fixtures=1</a> · free-only · no external writes · GET /v1/records only</p>
+    <p class="policy">Offline: <a href="?fixtures=1">?fixtures=1</a> · attribution required · no external writes · GET /v1/records only</p>
     <div id="product-root"></div>
   </main>
-  <footer class="footer">Opportunities · Solo Empire Insights consumer</footer>
+  <footer class="footer">News Signals · Solo Empire Insights consumer</footer>
   <script src="js/data-products-browser.js"></script>
   <script>
-    DataProducts.mountProductPage('opportunities', document.getElementById("product-root"));
+    DataProducts.mountProductPage('news', document.getElementById("product-root"));
   </script>
 </body>
 </html>

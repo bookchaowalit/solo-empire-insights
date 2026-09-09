@@ -1,6 +1,6 @@
 /**
- * Compatibility freeze test against data-product v1 contracts.
- * SSOT: solo-empire docs/systems/data-product-contracts-v1.yaml
+ * Compatibility freeze test against data-product v2 contracts.
+ * SSOT: solo-empire systems/architecture/data-product-contracts-v2.yaml
  * Breaking changes require a new schema_version (e.g. crypto.v2).
  */
 import assert from "node:assert/strict";
@@ -17,7 +17,7 @@ import {
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/** Frozen v1 map — must match docs/systems/data-product-contracts-v1.yaml */
+/** Frozen v2 map — must match systems/architecture/data-product-contracts-v2.yaml */
 const FROZEN = [
   { id: "crypto", port: 8101, schemaVersion: "crypto.v1", repo: "book-crypto-data" },
   { id: "stocks", port: 8102, schemaVersion: "stock.v1", repo: "book-stock-data" },
@@ -26,12 +26,6 @@ const FROZEN = [
   { id: "flights", port: 8105, schemaVersion: "flight.v1", repo: "book-flight-data" },
   { id: "seo", port: 8106, schemaVersion: "seo.v1", repo: "book-seo-data" },
   { id: "ai_tools", port: 8107, schemaVersion: "ai_tools.v1", repo: "book-ai-tools-data" },
-  {
-    id: "opportunities",
-    port: 8108,
-    schemaVersion: "opportunity.v1",
-    repo: "book-opportunity-intelligence",
-  },
 ] as const;
 
 const ENVELOPE_KEYS = [
@@ -45,7 +39,8 @@ const ENVELOPE_KEYS = [
 
 describe("data-product v1 contract freeze (insights consumer)", () => {
   it("catalog matches frozen ports and schema_version values", () => {
-    assert.equal(DATA_PRODUCT_CATALOG.length, 8);
+    // v2 remains a seven-product freeze; news.v1 and discovery.v1 are additive domain extensions.
+    assert.equal(DATA_PRODUCT_CATALOG.length, 9);
     for (const frozen of FROZEN) {
       const product = DATA_PRODUCT_CATALOG.find((p) => p.id === frozen.id);
       assert.ok(product, `missing product ${frozen.id}`);
@@ -56,8 +51,18 @@ describe("data-product v1 contract freeze (insights consumer)", () => {
     }
     assert.deepEqual(
       DATA_PRODUCT_CATALOG.map((p) => p.port).sort(),
-      [8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108],
+      [8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108, 8110],
     );
+    const news = DATA_PRODUCT_CATALOG.find((p) => p.id === "news");
+    assert.deepEqual(news && { port: news.port, schemaVersion: news.schemaVersion }, {
+      port: 8108,
+      schemaVersion: "news.v1",
+    });
+    const discovery = DATA_PRODUCT_CATALOG.find((p) => p.id === "discovery");
+    assert.deepEqual(discovery && { port: discovery.port, schemaVersion: discovery.schemaVersion }, {
+      port: 8110,
+      schemaVersion: "discovery.v1",
+    });
   });
 
   it("free-only consumer policy is frozen", () => {

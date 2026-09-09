@@ -87,18 +87,6 @@
       "data_status": "stale",
       "retrieved_at": "2026-08-01T12:00:00Z",
       "status": "fixture"
-    },
-    {
-      "id": "opportunities",
-      "name": "Opportunities",
-      "icon": "\ud83d\udcb0",
-      "repo": "book-opportunity-intelligence",
-      "port": 8108,
-      "schema_version": "opportunity.v1",
-      "record_count": 2,
-      "data_status": "stale",
-      "retrieved_at": "2026-08-01T12:00:00Z",
-      "status": "fixture"
     }
   ]
 }

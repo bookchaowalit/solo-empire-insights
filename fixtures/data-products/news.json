@@ -1,0 +1,35 @@
+{
+  "schema_version": "news.v1",
+  "source": "book-news-scraping",
+  "retrieved_at": "2026-09-08T00:00:00Z",
+  "data_status": "ok",
+  "items": [
+    {
+      "record_id": "demo-publisher-article-001",
+      "article_id": "article-001",
+      "headline": "ตัวอย่างสัญญาณข่าวเทคโนโลยี",
+      "title": "ตัวอย่างสัญญาณข่าวเทคโนโลยี",
+      "canonical_url": "https://publisher.example/news/article-001",
+      "publisher": "Demo Publisher",
+      "source": "Demo Publisher",
+      "source_feed_url": "https://publisher.example/feed",
+      "published_at": "2026-09-07T08:00:00Z",
+      "observed_at": "2026-09-08T00:00:00Z",
+      "capture_kind": "rss_article"
+    },
+    {
+      "record_id": "demo-business-article-002",
+      "article_id": "article-002",
+      "headline": "ตัวอย่างสัญญาณข่าวธุรกิจ",
+      "title": "ตัวอย่างสัญญาณข่าวธุรกิจ",
+      "canonical_url": "https://publisher.example/news/article-002",
+      "publisher": "Demo Business Feed",
+      "source": "Demo Business Feed",
+      "source_feed_url": "https://publisher.example/business.xml",
+      "published_at": "2026-09-07T09:00:00Z",
+      "observed_at": "2026-09-08T00:00:00Z",
+      "capture_kind": "rss_article"
+    }
+  ],
+  "next_cursor": null
+}

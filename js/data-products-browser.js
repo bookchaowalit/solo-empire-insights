@@ -1,6 +1,6 @@
 /**
  * Browser bundle (no build step required) for Solo Empire Insights.
- * Read-only consumer of local data-product APIs 8101–8108 + fixture fallback.
+ * Read-only consumer of local data-product APIs 8101–8110 + fixture fallback.
  * UI never exposes secrets, raw provider errors, or paid-provider assumptions.
  */
 (function (global) {
@@ -12,9 +12,10 @@
     { id: "fx", title: "Exchange Rates", icon: "💱", repo: "book-fx-data", schemaVersion: "fx.v1", port: 8103, baseUrl: "http://127.0.0.1:8103" },
     { id: "defi", title: "DeFi Yields", icon: "🏦", repo: "book-defi-data", schemaVersion: "defi.v1", port: 8104, baseUrl: "http://127.0.0.1:8104" },
     { id: "flights", title: "Flight Prices", icon: "✈️", repo: "book-flight-data", schemaVersion: "flight.v1", port: 8105, baseUrl: "http://127.0.0.1:8105" },
-    { id: "seo", title: "SEO Rankings", icon: "🔍", repo: "book-seo-data", schemaVersion: "seo.v1", port: 8106, baseUrl: "http://127.0.0.1:8106" },
+    { id: "seo", title: "SEO Provenance", icon: "🔍", repo: "book-seo-data", schemaVersion: "seo.v1", port: 8106, baseUrl: "http://127.0.0.1:8106" },
     { id: "ai_tools", title: "AI Tools", icon: "🤖", repo: "book-ai-tools-data", schemaVersion: "ai_tools.v1", port: 8107, baseUrl: "http://127.0.0.1:8107" },
-    { id: "opportunities", title: "Opportunities", icon: "💰", repo: "book-opportunity-intelligence", schemaVersion: "opportunity.v1", port: 8108, baseUrl: "http://127.0.0.1:8108" },
+    { id: "news", title: "News Signals", icon: "📰", repo: "book-news-scraping", schemaVersion: "news.v1", port: 8108, baseUrl: "http://127.0.0.1:8108" },
+    { id: "discovery", title: "Technology Discovery", icon: "🧭", repo: "book-discovery-data", schemaVersion: "discovery.v1", port: 8110, baseUrl: "http://127.0.0.1:8110" },
   ];
 
   function sanitizeUserFacingMessage(kind, detail) {
@@ -51,9 +52,9 @@
   }
 
   function stateFromEnvelope(envelope) {
+    if (envelope.data_status === "malformed") return "error";
     if (envelope.data_status === "empty" || envelope.items.length === 0) return "empty";
     if (envelope.data_status === "stale") return "stale";
-    if (envelope.data_status === "malformed") return "error";
     return "ready";
   }
 
@@ -61,6 +62,12 @@
     return CATALOG.find(function (p) {
       return p.id === id;
     });
+  }
+
+  function configuredBaseUrl(productId, fallback) {
+    var overrides = global.DATA_PRODUCT_URLS;
+    var configured = overrides && typeof overrides === "object" ? overrides[productId] : "";
+    return typeof configured === "string" && configured.trim() ? configured.trim() : fallback;
   }
 
   function fixtureUrl(productId) {
@@ -126,7 +133,7 @@
       }
     }
 
-    var baseUrl = (options.baseUrl || product.baseUrl).replace(/\/$/, "");
+    var baseUrl = (options.baseUrl || configuredBaseUrl(product.id, product.baseUrl)).replace(/\/$/, "");
     var limit = options.limit || 50;
     // Read-only: GET /v1/records only — never POST /v1/refresh.
     var url = baseUrl + "/v1/records?limit=" + limit;
@@ -280,13 +287,21 @@
       return (item.origin || "") + "-" + (item.destination || "") + " · ฿" + (item.price_thb || "");
     }
     if (productId === "seo") {
+      if (item.capture_kind === "owned_page_provenance") {
+        var pageStatus = item.page_data_status || (String(item.found).toLowerCase() === "true" ? "reachable" : "unreachable");
+        var httpStatus = item.page_http_status ? " · HTTP " + item.page_http_status : "";
+        return (item.target_domain || item.keyword || "") + " · " + pageStatus + httpStatus;
+      }
       return (item.keyword || "") + " · rank " + (item.best_rank || "—");
     }
     if (productId === "ai_tools") {
       return (item.name || "") + " · " + (item.source || "");
     }
-    if (productId === "opportunities") {
-      return (item.title || "").slice(0, 80) + " · score " + (item.trend_score || "");
+    if (productId === "news") {
+      return (item.headline || item.title || "") + " · " + (item.publisher || item.source || "");
+    }
+    if (productId === "discovery") {
+      return (item.title || "") + " · " + (item.publisher || item.source || "");
     }
     return JSON.stringify(item).slice(0, 120);
   }
@@ -408,7 +423,23 @@
       root.setAttribute("aria-busy", "false");
       return;
     }
-    var headers = Object.keys(result.envelope.items[0] || { record_id: "" });
+    var seoProvenance =
+      productId === "seo" &&
+      result.envelope.items.some(function (item) {
+        return item.capture_kind === "owned_page_provenance";
+      });
+    var headers = seoProvenance
+      ? [
+          "target_domain",
+          "page_data_status",
+          "page_http_status",
+          "found",
+          "result_title",
+          "result_url",
+          "observed_at",
+          "capture_kind",
+        ]
+      : Object.keys(result.envelope.items[0] || { record_id: "" });
     var head = headers
       .map(function (h) {
         return "<th scope='col'>" + escapeHtml(h) + "</th>";

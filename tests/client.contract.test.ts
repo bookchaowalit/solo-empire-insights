@@ -38,11 +38,32 @@ function mockFetch(handlers: Record<string, () => Response | Promise<Response>>)
   };
 }
 
+it("explicit URL wins over environment and malformed empty data remains an error", async () => {
+  const original = process.env.NEXT_PUBLIC_DATA_PRODUCT_URL_CRYPTO;
+  process.env.NEXT_PUBLIC_DATA_PRODUCT_URL_CRYPTO = "http://127.0.0.1:9999";
+  try {
+    const fixture = await loadFixture("crypto");
+    const result = await fetchProductRecords("crypto", {
+      useFixtures: false,
+      baseUrl: "http://127.0.0.1:8999",
+      fetchImpl: async (input) => {
+        assert.ok(String(input).startsWith("http://127.0.0.1:8999/"));
+        return new Response(JSON.stringify({ ...fixture, data_status: "malformed", items: [] }));
+      },
+    });
+    assert.equal(result.source, "api");
+    assert.equal(result.state, "error");
+  } finally {
+    if (original === undefined) delete process.env.NEXT_PUBLIC_DATA_PRODUCT_URL_CRYPTO;
+    else process.env.NEXT_PUBLIC_DATA_PRODUCT_URL_CRYPTO = original;
+  }
+});
+
 describe("data-product catalog", () => {
-  it("covers eight free-only local ports 8101-8108", () => {
-    assert.equal(DATA_PRODUCT_CATALOG.length, 8);
+  it("covers the seven frozen ports plus news.v1 and discovery.v1", () => {
+    assert.equal(DATA_PRODUCT_CATALOG.length, 9);
     const ports = DATA_PRODUCT_CATALOG.map((p) => p.port).sort();
-    assert.deepEqual(ports, [8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108]);
+    assert.deepEqual(ports, [8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108, 8110]);
     assert.equal(FREE_ONLY_DEFAULTS.freeOnly, true);
     assert.equal(FREE_ONLY_DEFAULTS.allowExternalWrites, false);
     assert.equal(FREE_ONLY_DEFAULTS.allowPaidProviders, false);
@@ -50,9 +71,9 @@ describe("data-product catalog", () => {
 
   it("binds every product to a unique loopback base URL", () => {
     const urls = DATA_PRODUCT_CATALOG.map((p) => p.baseUrl);
-    assert.equal(new Set(urls).size, 8);
+    assert.equal(new Set(urls).size, 9);
     for (const product of DATA_PRODUCT_CATALOG) {
-      assert.match(product.baseUrl, /^http:\/\/127\.0\.0\.1:810[1-8]$/);
+      assert.match(product.baseUrl, /^http:\/\/127\.0\.0\.1:(810[1-8]|8110)$/);
     }
   });
 });
@@ -264,9 +285,9 @@ describe("fetchProductRecords", () => {
     assert.equal(result.errorMessage, "Response is not a versioned data-product envelope");
   });
 
-  it("fetchAllProducts returns eight results in fixture mode", async () => {
+  it("fetchAllProducts returns nine results in fixture mode", async () => {
     const results = await fetchAllProducts({ useFixtures: true, loadFixture });
-    assert.equal(results.length, 8);
+    assert.equal(results.length, 9);
     assert.ok(results.every((r) => r.source === "fixture"));
     assert.ok(results.every((r) => r.freeOnly === true));
     assert.ok(results.every((r) => r.allowExternalWrites === false));

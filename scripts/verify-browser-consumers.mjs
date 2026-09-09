@@ -2,7 +2,7 @@
 /**
  * Verify solo-empire-insights + portfolio data-product clients against:
  *  - fixture mode (no APIs required)
- *  - live local APIs 8101–8108 (must already be running)
+ *  - live local APIs 8101–8110 (must already be running)
  *
  * Also checks CORS allowlist for local origins and blocks non-local origins.
  * Never calls POST /v1/refresh from the consumer path.
@@ -20,7 +20,7 @@ const PORTFOLIO_ROOT = join(
   "../../../bookchaowalit-website/book-apps/portfolio/bookchaowalit-portfolio-frontend",
 );
 
-const PORTS = [8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108];
+const PORTS = [8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108, 8110];
 const LOCAL_ORIGINS = [
   "http://127.0.0.1:4173",
   "http://localhost:3000",
@@ -65,7 +65,7 @@ async function apisUp() {
 }
 
 async function verifyCors() {
-  console.log("\n[CORS] local-only origins on 8101–8108");
+  console.log("\n[CORS] local-only origins on 8101–8110");
   for (const port of PORTS) {
     const url = `http://127.0.0.1:${port}/v1/records?limit=1`;
     for (const origin of LOCAL_ORIGINS) {
@@ -134,7 +134,7 @@ async function verifyNoBrowserRefresh() {
 }
 
 async function verifyLiveRecords() {
-  console.log("\n[Live APIs] GET /v1/records envelopes 8101–8108");
+  console.log("\n[Live APIs] GET /v1/records envelopes 8101–8110");
   for (const port of PORTS) {
     const r = await getJson(`http://127.0.0.1:${port}/v1/records?limit=3`, {
       origin: "http://127.0.0.1:4173",
@@ -206,13 +206,13 @@ async function loadFixture(id) {
   return JSON.parse(await readFile(join(root, "fixtures/data-products", id + ".json"), "utf8"));
 }
 const fixtureResults = await fetchAllProducts({ useFixtures: true, loadFixture, fetchImpl: async () => { throw new Error("net"); } });
-assert.equal(fixtureResults.length, 8);
+assert.equal(fixtureResults.length, 9);
 assert.ok(fixtureResults.every(r => r.source === "fixture"));
 assert.ok(fixtureResults.every(r => !/api[_-]?key|secret/i.test(String(r.errorMessage||""))));
 
 // live mode
 const live = await fetchAllProducts({ useFixtures: false, loadFixture, timeoutMs: 4000 });
-assert.equal(live.length, 8);
+assert.equal(live.length, 9);
 const apiCount = live.filter(r => r.source === "api").length;
 assert.ok(apiCount >= 1, "expected some live API sources, got " + apiCount);
 assert.ok(live.every(r => r.freeOnly === true));
@@ -322,7 +322,8 @@ async function verifyInsightsBrowserJs() {
     "flights",
     "seo",
     "ai_tools",
-    "opportunities",
+    "news",
+    "discovery",
   ]) {
     const r = await getJson(`${base}/fixtures/data-products/${id}.json`);
     if (r.status !== 200 || !r.json?.schema_version) fail(`fixture ${id} missing`);
@@ -372,12 +373,12 @@ async function loadFixture(id) {
   return JSON.parse(await readFile(join(root, "fixtures/data-products", id + ".json"), "utf8"));
 }
 
-assert.equal(DATA_PRODUCT_CATALOG.length, 8);
+assert.equal(DATA_PRODUCT_CATALOG.length, 9);
 const fixtures = await fetchAllProducts({ useFixtures: true, loadFixture, fetchImpl: async () => { throw new Error("net"); } });
 assert.ok(fixtures.every(r => r.source === "fixture"));
 
 const live = await fetchAllProducts({ useFixtures: false, loadFixture, timeoutMs: 4000 });
-assert.equal(live.length, 8);
+assert.equal(live.length, 9);
 assert.ok(live.some(r => r.source === "api"));
 for (const r of live) {
   assert.equal(r.freeOnly, true);
@@ -425,14 +426,11 @@ async function main() {
   console.log("Browser consumer verification against local data-product APIs");
   const up = await apisUp();
   if (!up) {
-    console.error("APIs 8101–8108 are not all up. Start them first:");
-    console.error(
-      "  python3 ../book-apps/tools/book-opportunity-intelligence/scripts/start_local_data_apis.py",
-    );
+    console.error("APIs 8101–8110 are not all up. Start each domain API first.");
     // path relative note
     process.exit(2);
   }
-  ok("all healthz 8101–8108 up");
+  ok("all healthz 8101–8110 up");
 
   await verifyLiveRecords();
   await verifyCors();
