@@ -2,22 +2,19 @@
 
 ## Current state
 
-Score: 7.5/10 (7 after pass 1, 5 before) — typed client, browser bundle and
-static page wiring are under test and the stale `public/` mirror is gone; the
-static UI still duplicates client logic by hand and has no DOM-level tests.
+Score: 8/10 (7.5 after pass 2, 7 after pass 1, 5 before) — typed client,
+browser bundle, static page wiring and the rendered DOM states are under
+test; the static UI still duplicates client logic by hand.
 
 ## Backlog
 
 - P1: Generate `js/data-products-browser.js` from `src/data-products/` (e.g.
   a tiny esbuild step) instead of keeping two hand-written copies; the parity
   test in `tests/browser-bundle.test.ts` guards drift until then.
-- P1: DOM tests for `mountDashboard` / `mountProductPage` (jsdom or
-  happy-dom) covering loading/empty/timeout states and escaping of item data.
 - P2: Accessibility pass on the product tables (header scope is set; add
   focusable table wrapper and reduced-motion styles).
-- P2: The fixture static server in `scripts/verify-browser-consumers.mjs`
-  joins request paths without a traversal guard (local-only, but cheap to
-  harden with a `startsWith(root)` check).
+- P2: `scripts/verify-browser-consumers.mjs` needs all local APIs up; add a
+  fixtures-only mode so it can run in CI.
 
 ## Done in this pass
 
@@ -41,3 +38,15 @@ static UI still duplicates client logic by hand and has no DOM-level tests.
 - `scripts/verify-browser-consumers.mjs`: portfolio path now comes from
   `INSIGHTS_PORTFOLIO_ROOT` (default unchanged) and portfolio checks skip
   cleanly when the sibling checkout is absent.
+
+## Done in this pass (pass 3)
+
+- Added `tests/dom.test.ts` (happy-dom, stubbed fetch): loading banner and
+  `aria-busy`, rendered rows, escaping of hostile item keys/values, timeout
+  fixture fallback, sanitized unavailable message, dashboard cards.
+- Fixed: the dashboard banner was always styled `ok`, even when no product
+  loaded; it is now `ok`/`warn`/`bad` by how many loaded.
+- Fixed: a product page with an empty envelope rendered a header-only table
+  with a made-up `record_id` column; it now says "No records in this envelope."
+- Hardened the verification script's fixture server against paths outside
+  the repository root.

@@ -143,7 +143,11 @@ Contract tests mock HTTP responses and never call real upstream providers.
 fallback behaviour match `src/data-products/`. There is no browser build step:
 edit both files together. `tests/static-site.test.ts` checks that every page's
 local assets exist; the site is served from the repository root, so do not add
-a `public/` copy of `js/`, `css/` or `fixtures/`.
+a `public/` copy of `js/`, `css/` or `fixtures/`. `tests/dom.test.ts` runs the
+bundle in a happy-dom window and checks what `mountDashboard` and
+`mountProductPage` render: loading/`aria-busy`, ready, empty, timeout and
+unavailable states, the dashboard banner (ok/warn/bad by how many products
+loaded) and HTML escaping of item keys and values.
 
 ## Layout
 

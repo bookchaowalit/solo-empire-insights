@@ -9,7 +9,7 @@
  */
 import { createServer } from "node:http";
 import { access, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
 
@@ -311,7 +311,9 @@ async function verifyInsightsBrowserJs() {
     try {
       const url = new URL(req.url || "/", "http://127.0.0.1");
       let path = url.pathname === "/" ? "/index.html" : url.pathname;
-      const file = join(root, path.replace(/^\//, ""));
+      const file = resolve(root, decodeURIComponent(path).replace(/^\/+/, ""));
+      // Never serve anything outside the repository root (e.g. encoded "..").
+      if (file !== root && !file.startsWith(root + sep)) throw new Error("outside root");
       const data = await readFile(file);
       const type = file.endsWith(".js")
         ? "text/javascript"

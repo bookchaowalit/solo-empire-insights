@@ -28,6 +28,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .status-banner.muted{color:var(--muted)}
 .env{font-size:.78rem;color:var(--muted);margin-bottom:.5rem}
 .note{margin-top:.6rem;font-size:.8rem;color:var(--yellow)}
+.empty-state{margin-top:.75rem;font-size:.9rem}
 ul{margin-left:1.1rem;font-size:.9rem}
 .table-wrap{overflow:auto;margin-top:.75rem}
 .data-table{width:100%;border-collapse:collapse;font-size:.82rem}

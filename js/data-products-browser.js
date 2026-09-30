@@ -391,7 +391,8 @@
     });
 
     var banner = root.querySelector(".status-banner");
-    banner.className = "status-banner ok";
+    // A partial or failed load must not look healthy.
+    banner.className = "status-banner " + (ready === results.length ? "ok" : ready === 0 ? "bad" : "warn");
     banner.textContent =
       ready +
       "/" +
@@ -424,6 +425,25 @@
       root.setAttribute("aria-busy", "false");
       return;
     }
+    var envelopeMeta =
+      "<div class='env' aria-label='Envelope metadata'>" +
+      "schema=" +
+      escapeHtml(result.envelope.schema_version) +
+      " · source=" +
+      escapeHtml(result.envelope.source) +
+      " · data_status=" +
+      escapeHtml(String(result.envelope.data_status)) +
+      " · retrieved=" +
+      escapeHtml(result.envelope.retrieved_at) +
+      "</div>";
+    var note = result.errorMessage
+      ? "<div class='note' role='note'>" + escapeHtml(result.errorMessage) + "</div>"
+      : "";
+    if (result.envelope.items.length === 0) {
+      body.innerHTML = envelopeMeta + "<p class='empty-state'>No records in this envelope.</p>" + note;
+      root.setAttribute("aria-busy", "false");
+      return;
+    }
     var seoProvenance =
       productId === "seo" &&
       result.envelope.items.some(function (item) {
@@ -440,7 +460,7 @@
           "observed_at",
           "capture_kind",
         ]
-      : Object.keys(result.envelope.items[0] || { record_id: "" });
+      : Object.keys(result.envelope.items[0]);
     var head = headers
       .map(function (h) {
         return "<th scope='col'>" + escapeHtml(h) + "</th>";
@@ -460,25 +480,15 @@
       })
       .join("");
     body.innerHTML =
-      "<div class='env' aria-label='Envelope metadata'>" +
-      "schema=" +
-      escapeHtml(result.envelope.schema_version) +
-      " · source=" +
-      escapeHtml(result.envelope.source) +
-      " · data_status=" +
-      escapeHtml(String(result.envelope.data_status)) +
-      " · retrieved=" +
-      escapeHtml(result.envelope.retrieved_at) +
-      "</div><div class='table-wrap'><table class='data-table'><caption class='sr-only'>" +
+      envelopeMeta +
+      "<div class='table-wrap'><table class='data-table'><caption class='sr-only'>" +
       escapeHtml(productId) +
       " records</caption><thead><tr>" +
       head +
       "</tr></thead><tbody>" +
       rows +
       "</tbody></table></div>" +
-      (result.errorMessage
-        ? "<div class='note' role='note'>" + escapeHtml(result.errorMessage) + "</div>"
-        : "");
+      note;
     root.setAttribute("aria-busy", "false");
   }
 
