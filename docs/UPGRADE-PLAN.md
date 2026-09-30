@@ -50,3 +50,13 @@ test; the static UI still duplicates client logic by hand.
   with a made-up `record_id` column; it now says "No records in this envelope."
 - Hardened the verification script's fixture server against paths outside
   the repository root.
+
+## Done in this pass (pass 4: edge-case bug hunt)
+
+- Fixed: card previews used `value || ""`, so a real `0` vanished
+  ("APY %", "FLAT · 10 (%)", crypto price blank); they now keep `0`/`false`
+  and blank only missing values.
+- Fixed: product tables took columns from the first record only, dropping
+  fields later records carry; columns are now the union of all records'
+  keys. Nested values render as JSON instead of `[object Object]`.
+  Regression tests in `tests/dom.test.ts`.

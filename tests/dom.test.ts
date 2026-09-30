@@ -80,6 +80,22 @@ describe("mountProductPage", () => {
     assert.ok(app.querySelector("tbody")!.textContent!.includes("a'b"));
   });
 
+  it("gives every record's fields a column and shows 0, false and nested values", async () => {
+    const { api, app } = mount(async () =>
+      json(envelope("stocks", [{ symbol: "AAA", change_pct: 0 }, { symbol: "BBB", halted: false, meta: { lot: 100 } }])),
+    );
+
+    await api.mountProductPage("stocks", app);
+
+    const headers = [...app.querySelectorAll("th")].map((th) => th.textContent);
+    assert.deepEqual(headers, ["symbol", "change_pct", "halted", "meta"]);
+    const cells = [...app.querySelectorAll("tbody tr")].map((tr) => [...tr.querySelectorAll("td")].map((td) => td.textContent));
+    assert.deepEqual(cells, [
+      ["AAA", "0", "", ""],
+      ["BBB", "", "false", '{"lot":100}'],
+    ]);
+  });
+
   it("says so when the envelope has no records instead of an empty table", async () => {
     const { api, app } = mount(async () => json(envelope("fx", [], "empty")));
 
@@ -137,6 +153,22 @@ describe("mountDashboard", () => {
     assert.match(banner.textContent!, /^1\/9 products loaded/);
     assert.match(banner.className, /\bwarn\b/, "a partial load must not look fully healthy");
     assert.equal(app.getAttribute("aria-busy"), "false");
+  });
+
+  it("keeps a zero price, change or APY in the card preview", async () => {
+    const { api, app } = mount(async (url) => {
+      if (url.startsWith("http://127.0.0.1:8101/")) return json(envelope("crypto", [{ coin_id: "dust", currency: "usd", price: 0 }]));
+      if (url.includes("/v1/records")) {
+        return json(envelope("stocks", [{ symbol: "FLAT", price: "10", change_pct: 0, project: "pool", apy: 0 }]));
+      }
+      return new Response("down", { status: 503 });
+    });
+
+    await api.mountDashboard(app);
+
+    assert.equal(app.querySelector("#card-crypto li")!.textContent, "dust · usd · 0");
+    assert.equal(app.querySelector("#card-stocks li")!.textContent, "FLAT · 10 (0%)");
+    assert.equal(app.querySelector("#card-defi li")!.textContent, "pool · FLAT · APY 0%");
   });
 
   it("marks the banner bad when nothing loaded and ok when everything did", async () => {
