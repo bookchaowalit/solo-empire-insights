@@ -59,7 +59,9 @@ python3 -m http.server 4178 --bind 127.0.0.1
 # http://localhost:*. For a hosted frontend, set the same explicit origin in
 # each API's CORS_ALLOWED_ORIGINS environment variable.
 
-# Automated browser-consumer checks (APIs must be up)
+# Automated browser-consumer checks (APIs must be up). Portfolio checks use
+# INSIGHTS_PORTFOLIO_ROOT (default: the sibling website checkout) and are
+# skipped when it is absent.
 node scripts/verify-browser-consumers.mjs
 ```
 
@@ -139,7 +141,9 @@ Contract tests mock HTTP responses and never call real upstream providers.
 `tests/browser-bundle.test.ts` runs the hand-maintained
 `js/data-products-browser.js` in a sandbox and asserts its catalog and
 fallback behaviour match `src/data-products/`. There is no browser build step:
-edit both files together.
+edit both files together. `tests/static-site.test.ts` checks that every page's
+local assets exist; the site is served from the repository root, so do not add
+a `public/` copy of `js/`, `css/` or `fixtures/`.
 
 ## Layout
 

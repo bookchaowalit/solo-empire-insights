@@ -2,15 +2,12 @@
 
 ## Current state
 
-Score: 7/10 (was 5/10) — typed client and browser bundle are now both under
-test and CI runs the real checks; the static UI still duplicates client logic
-by hand and has no DOM-level tests.
+Score: 7.5/10 (7 after pass 1, 5 before) — typed client, browser bundle and
+static page wiring are under test and the stale `public/` mirror is gone; the
+static UI still duplicates client logic by hand and has no DOM-level tests.
 
 ## Backlog
 
-- P1: Decide the fate of `public/` (a stale partial copy of `js/`, `css/`,
-  and fixtures without `news`/`discovery`; nothing references it). Either
-  delete it or generate it, then add a test so it cannot drift.
 - P1: Generate `js/data-products-browser.js` from `src/data-products/` (e.g.
   a tiny esbuild step) instead of keeping two hand-written copies; the parity
   test in `tests/browser-bundle.test.ts` guards drift until then.
@@ -18,8 +15,9 @@ by hand and has no DOM-level tests.
   happy-dom) covering loading/empty/timeout states and escaping of item data.
 - P2: Accessibility pass on the product tables (header scope is set; add
   focusable table wrapper and reduced-motion styles).
-- P2: `scripts/verify-browser-consumers.mjs` hard-codes a sibling portfolio
-  path; accept it via an env var and skip cleanly when absent.
+- P2: The fixture static server in `scripts/verify-browser-consumers.mjs`
+  joins request paths without a traversal guard (local-only, but cheap to
+  harden with a `startsWith(root)` check).
 
 ## Done in this pass
 
@@ -31,3 +29,15 @@ by hand and has no DOM-level tests.
 - Fixed `escapeHtml` in the browser bundle to escape single quotes.
 - Added GitHub Actions CI (Node 22: `npm ci`, typecheck, tests, syntax check).
 - README: documented `NEXT_PUBLIC_DATA_PRODUCT_URL_NEWS` and the test layout.
+
+## Done in this pass (pass 2)
+
+- Removed `public/`: verified unreferenced (no HTML, script, CI, README, or
+  parent Solo Empire reference; pages are served from the repo root) and it
+  was a partial copy missing `news`/`discovery` fixtures.
+- Added `tests/static-site.test.ts`: every root page's local `src`/`href`
+  resolves, each catalog product has a fixture, and no mirror of `js/` may
+  reappear under `public/`, `dist/` or `static/`.
+- `scripts/verify-browser-consumers.mjs`: portfolio path now comes from
+  `INSIGHTS_PORTFOLIO_ROOT` (default unchanged) and portfolio checks skip
+  cleanly when the sibling checkout is absent.
