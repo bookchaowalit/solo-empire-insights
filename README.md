@@ -96,8 +96,8 @@ records/history and timestamps, then explicitly select that lake for serving.
 For a hosted frontend, set URL-only public variables in the frontend runtime:
 `NEXT_PUBLIC_DATA_PRODUCT_URL_CRYPTO`, `NEXT_PUBLIC_DATA_PRODUCT_URL_STOCKS`,
 `NEXT_PUBLIC_DATA_PRODUCT_URL_FX`, `NEXT_PUBLIC_DATA_PRODUCT_URL_DEFI`,
-`NEXT_PUBLIC_DATA_PRODUCT_URL_FLIGHTS`, `NEXT_PUBLIC_DATA_PRODUCT_URL_SEO`, and
-`NEXT_PUBLIC_DATA_PRODUCT_URL_AI_TOOLS`, and
+`NEXT_PUBLIC_DATA_PRODUCT_URL_FLIGHTS`, `NEXT_PUBLIC_DATA_PRODUCT_URL_SEO`,
+`NEXT_PUBLIC_DATA_PRODUCT_URL_AI_TOOLS`, `NEXT_PUBLIC_DATA_PRODUCT_URL_NEWS`, and
 `NEXT_PUBLIC_DATA_PRODUCT_URL_DISCOVERY`. Keep API tokens server-side; all
 domain APIs are read-only and still require their own lake configuration.
 The static HTML consumer accepts the equivalent URL-only map as
@@ -128,12 +128,18 @@ falls back to sanitized fixtures under `fixtures/data-products/`.
 
 ## Tests
 
+Requires Node.js 22.6+ (tests run TypeScript via `--experimental-strip-types`).
+
 ```bash
-npm test
-npm run typecheck
+npm ci
+npm run check   # typecheck + tests
 ```
 
 Contract tests mock HTTP responses and never call real upstream providers.
+`tests/browser-bundle.test.ts` runs the hand-maintained
+`js/data-products-browser.js` in a sandbox and asserts its catalog and
+fallback behaviour match `src/data-products/`. There is no browser build step:
+edit both files together.
 
 ## Layout
 

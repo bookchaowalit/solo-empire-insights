@@ -311,7 +311,8 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   async function mountDashboard(root) {
@@ -489,6 +490,7 @@
     mountProductPage: mountProductPage,
     isEnvelope: isEnvelope,
     sanitizeUserFacingMessage: sanitizeUserFacingMessage,
+    escapeHtml: escapeHtml,
     FREE_ONLY: true,
     ALLOW_EXTERNAL_WRITES: false,
     ALLOW_PAID_PROVIDERS: false,
