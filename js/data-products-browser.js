@@ -269,22 +269,36 @@
     return "no source";
   }
 
+  // Display text for one record value: missing values are blank, but a real 0
+  // or false stays visible ("APY 0%", not "APY %"); nested values are shown as
+  // JSON instead of "[object Object]".
+  function displayValue(value) {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "number" && !isFinite(value)) return "";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  }
+
   function renderItemPreview(productId, item) {
     if (!item) return "";
+    var v = function (value, fallback) {
+      var text = displayValue(value);
+      return text === "" && fallback !== undefined ? fallback : text;
+    };
     if (productId === "crypto") {
-      return (item.coin_id || "?") + " · " + (item.currency || "") + " · " + (item.price || "");
+      return v(item.coin_id, "?") + " · " + v(item.currency) + " · " + v(item.price);
     }
     if (productId === "stocks") {
-      return (item.symbol || "?") + " · " + (item.price || "") + " (" + (item.change_pct || "") + "%)";
+      return v(item.symbol, "?") + " · " + v(item.price) + " (" + v(item.change_pct) + "%)";
     }
     if (productId === "fx") {
-      return (item.base || "") + "/" + (item.currency || "") + " · " + (item.rate || "");
+      return v(item.base) + "/" + v(item.currency) + " · " + v(item.rate);
     }
     if (productId === "defi") {
-      return (item.project || "") + " · " + (item.symbol || "") + " · APY " + (item.apy || "") + "%";
+      return v(item.project) + " · " + v(item.symbol) + " · APY " + v(item.apy) + "%";
     }
     if (productId === "flights") {
-      return (item.origin || "") + "-" + (item.destination || "") + " · ฿" + (item.price_thb || "");
+      return v(item.origin) + "-" + v(item.destination) + " · ฿" + v(item.price_thb);
     }
     if (productId === "seo") {
       if (item.capture_kind === "owned_page_provenance") {
@@ -292,7 +306,7 @@
         var httpStatus = item.page_http_status ? " · HTTP " + item.page_http_status : "";
         return (item.target_domain || item.keyword || "") + " · " + pageStatus + httpStatus;
       }
-      return (item.keyword || "") + " · rank " + (item.best_rank || "—");
+      return (item.keyword || "") + " · rank " + v(item.best_rank, "—");
     }
     if (productId === "ai_tools") {
       return (item.name || "") + " · " + (item.source || "");
@@ -311,7 +325,8 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   async function mountDashboard(root) {
@@ -390,7 +405,8 @@
     });
 
     var banner = root.querySelector(".status-banner");
-    banner.className = "status-banner ok";
+    // A partial or failed load must not look healthy.
+    banner.className = "status-banner " + (ready === results.length ? "ok" : ready === 0 ? "bad" : "warn");
     banner.textContent =
       ready +
       "/" +
@@ -423,6 +439,25 @@
       root.setAttribute("aria-busy", "false");
       return;
     }
+    var envelopeMeta =
+      "<div class='env' aria-label='Envelope metadata'>" +
+      "schema=" +
+      escapeHtml(result.envelope.schema_version) +
+      " · source=" +
+      escapeHtml(result.envelope.source) +
+      " · data_status=" +
+      escapeHtml(String(result.envelope.data_status)) +
+      " · retrieved=" +
+      escapeHtml(result.envelope.retrieved_at) +
+      "</div>";
+    var note = result.errorMessage
+      ? "<div class='note' role='note'>" + escapeHtml(result.errorMessage) + "</div>"
+      : "";
+    if (result.envelope.items.length === 0) {
+      body.innerHTML = envelopeMeta + "<p class='empty-state'>No records in this envelope.</p>" + note;
+      root.setAttribute("aria-busy", "false");
+      return;
+    }
     var seoProvenance =
       productId === "seo" &&
       result.envelope.items.some(function (item) {
@@ -439,7 +474,14 @@
           "observed_at",
           "capture_kind",
         ]
-      : Object.keys(result.envelope.items[0] || { record_id: "" });
+      : result.envelope.items.reduce(function (keys, item) {
+          // Union of every record's keys, so a field missing from the first
+          // record still gets a column.
+          Object.keys(item || {}).forEach(function (key) {
+            if (keys.indexOf(key) === -1) keys.push(key);
+          });
+          return keys;
+        }, []);
     var head = headers
       .map(function (h) {
         return "<th scope='col'>" + escapeHtml(h) + "</th>";
@@ -451,7 +493,7 @@
           "<tr>" +
           headers
             .map(function (h) {
-              return "<td>" + escapeHtml(String(item[h] != null ? item[h] : "")) + "</td>";
+              return "<td>" + escapeHtml(displayValue(item[h])) + "</td>";
             })
             .join("") +
           "</tr>"
@@ -459,25 +501,15 @@
       })
       .join("");
     body.innerHTML =
-      "<div class='env' aria-label='Envelope metadata'>" +
-      "schema=" +
-      escapeHtml(result.envelope.schema_version) +
-      " · source=" +
-      escapeHtml(result.envelope.source) +
-      " · data_status=" +
-      escapeHtml(String(result.envelope.data_status)) +
-      " · retrieved=" +
-      escapeHtml(result.envelope.retrieved_at) +
-      "</div><div class='table-wrap'><table class='data-table'><caption class='sr-only'>" +
+      envelopeMeta +
+      "<div class='table-wrap'><table class='data-table'><caption class='sr-only'>" +
       escapeHtml(productId) +
       " records</caption><thead><tr>" +
       head +
       "</tr></thead><tbody>" +
       rows +
       "</tbody></table></div>" +
-      (result.errorMessage
-        ? "<div class='note' role='note'>" + escapeHtml(result.errorMessage) + "</div>"
-        : "");
+      note;
     root.setAttribute("aria-busy", "false");
   }
 
@@ -489,6 +521,7 @@
     mountProductPage: mountProductPage,
     isEnvelope: isEnvelope,
     sanitizeUserFacingMessage: sanitizeUserFacingMessage,
+    escapeHtml: escapeHtml,
     FREE_ONLY: true,
     ALLOW_EXTERNAL_WRITES: false,
     ALLOW_PAID_PROVIDERS: false,

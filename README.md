@@ -59,7 +59,9 @@ python3 -m http.server 4178 --bind 127.0.0.1
 # http://localhost:*. For a hosted frontend, set the same explicit origin in
 # each API's CORS_ALLOWED_ORIGINS environment variable.
 
-# Automated browser-consumer checks (APIs must be up)
+# Automated browser-consumer checks (APIs must be up). Portfolio checks use
+# INSIGHTS_PORTFOLIO_ROOT (default: the sibling website checkout) and are
+# skipped when it is absent.
 node scripts/verify-browser-consumers.mjs
 ```
 
@@ -96,8 +98,8 @@ records/history and timestamps, then explicitly select that lake for serving.
 For a hosted frontend, set URL-only public variables in the frontend runtime:
 `NEXT_PUBLIC_DATA_PRODUCT_URL_CRYPTO`, `NEXT_PUBLIC_DATA_PRODUCT_URL_STOCKS`,
 `NEXT_PUBLIC_DATA_PRODUCT_URL_FX`, `NEXT_PUBLIC_DATA_PRODUCT_URL_DEFI`,
-`NEXT_PUBLIC_DATA_PRODUCT_URL_FLIGHTS`, `NEXT_PUBLIC_DATA_PRODUCT_URL_SEO`, and
-`NEXT_PUBLIC_DATA_PRODUCT_URL_AI_TOOLS`, and
+`NEXT_PUBLIC_DATA_PRODUCT_URL_FLIGHTS`, `NEXT_PUBLIC_DATA_PRODUCT_URL_SEO`,
+`NEXT_PUBLIC_DATA_PRODUCT_URL_AI_TOOLS`, `NEXT_PUBLIC_DATA_PRODUCT_URL_NEWS`, and
 `NEXT_PUBLIC_DATA_PRODUCT_URL_DISCOVERY`. Keep API tokens server-side; all
 domain APIs are read-only and still require their own lake configuration.
 The static HTML consumer accepts the equivalent URL-only map as
@@ -128,12 +130,24 @@ falls back to sanitized fixtures under `fixtures/data-products/`.
 
 ## Tests
 
+Requires Node.js 22.6+ (tests run TypeScript via `--experimental-strip-types`).
+
 ```bash
-npm test
-npm run typecheck
+npm ci
+npm run check   # typecheck + tests
 ```
 
 Contract tests mock HTTP responses and never call real upstream providers.
+`tests/browser-bundle.test.ts` runs the hand-maintained
+`js/data-products-browser.js` in a sandbox and asserts its catalog and
+fallback behaviour match `src/data-products/`. There is no browser build step:
+edit both files together. `tests/static-site.test.ts` checks that every page's
+local assets exist; the site is served from the repository root, so do not add
+a `public/` copy of `js/`, `css/` or `fixtures/`. `tests/dom.test.ts` runs the
+bundle in a happy-dom window and checks what `mountDashboard` and
+`mountProductPage` render: loading/`aria-busy`, ready, empty, timeout and
+unavailable states, the dashboard banner (ok/warn/bad by how many products
+loaded) and HTML escaping of item keys and values.
 
 ## Layout
 

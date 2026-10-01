@@ -8,17 +8,31 @@
  * Never calls POST /v1/refresh from the consumer path.
  */
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { access, readFile } from "node:fs/promises";
+import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const INSIGHTS_ROOT = join(__dirname, "..");
-const PORTFOLIO_ROOT = join(
-  INSIGHTS_ROOT,
-  "../../../bookchaowalit-website/book-apps/portfolio/bookchaowalit-portfolio-frontend",
-);
+// Override with INSIGHTS_PORTFOLIO_ROOT; portfolio checks are skipped when the
+// sibling checkout is absent.
+const PORTFOLIO_ROOT =
+  process.env.INSIGHTS_PORTFOLIO_ROOT ||
+  join(
+    INSIGHTS_ROOT,
+    "../../../bookchaowalit-website/book-apps/portfolio/bookchaowalit-portfolio-frontend",
+  );
+const PORTFOLIO_CLIENT = join(PORTFOLIO_ROOT, "src/lib/data-products/client.ts");
+
+async function portfolioAvailable() {
+  try {
+    await access(PORTFOLIO_CLIENT);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const PORTS = [8101, 8102, 8103, 8104, 8105, 8106, 8107, 8108, 8110];
 const LOCAL_ORIGINS = [
@@ -125,10 +139,11 @@ async function verifyNoBrowserRefresh() {
   } else {
     ok("insights browser has no POST /v1/refresh");
   }
-  const portfolioClient = await readFile(
-    join(PORTFOLIO_ROOT, "src/lib/data-products/client.ts"),
-    "utf8",
-  );
+  if (!(await portfolioAvailable())) {
+    console.log(`  - portfolio client skipped (not found: ${PORTFOLIO_CLIENT})`);
+    return;
+  }
+  const portfolioClient = await readFile(PORTFOLIO_CLIENT, "utf8");
   if (/method:\s*["']POST["']/.test(portfolioClient)) fail("portfolio client uses POST");
   else ok("portfolio client is GET-only");
 }
@@ -170,10 +185,13 @@ async function loadInsightsClient() {
 
 async function verifyPortfolioClientLiveAndFixtures() {
   console.log("\n[Portfolio client] fixture + live modes");
+  if (!(await portfolioAvailable())) {
+    console.log(`  - skipped (set INSIGHTS_PORTFOLIO_ROOT; not found: ${PORTFOLIO_CLIENT})`);
+    return;
+  }
   // Run via node --experimental-strip-types on portfolio tests is separate;
   // here we call the client module if possible.
   try {
-    const clientPath = join(PORTFOLIO_ROOT, "src/lib/data-products/client.ts");
     // Use child process to run a small strip-types harness
     const { spawnSync } = await import("node:child_process");
     const harness = `
@@ -293,7 +311,9 @@ async function verifyInsightsBrowserJs() {
     try {
       const url = new URL(req.url || "/", "http://127.0.0.1");
       let path = url.pathname === "/" ? "/index.html" : url.pathname;
-      const file = join(root, path.replace(/^\//, ""));
+      const file = resolve(root, decodeURIComponent(path).replace(/^\/+/, ""));
+      // Never serve anything outside the repository root (e.g. encoded "..").
+      if (file !== root && !file.startsWith(root + sep)) throw new Error("outside root");
       const data = await readFile(file);
       const type = file.endsWith(".js")
         ? "text/javascript"
