@@ -15,7 +15,10 @@ import type {
   DataProductEnvelope,
   FetchOptions,
   ProductLoadResult,
+  DataStatus,
 } from "./types.ts";
+import { loadFixture as defaultNodeFixtureLoader } from "./node-fixture.ts";
+import { fetchJsonWithTimeout } from "./request.ts";
 
 /**
  * Resolve a public API override for hosted demos while keeping loopback
@@ -88,35 +91,38 @@ export function sanitizeUserFacingMessage(
 }
 
 export function isDataProductEnvelope(value: unknown): value is DataProductEnvelope {
-  if (!value || typeof value !== "object") return false;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const obj = value as Record<string, unknown>;
   for (const key of ENVELOPE_KEYS) {
     if (!(key in obj)) return false;
   }
-  if (!Array.isArray(obj.items)) return false;
-  return typeof obj.schema_version === "string" && typeof obj.source === "string";
+  return (
+    typeof obj.schema_version === "string" && obj.schema_version.trim().length > 0 &&
+    typeof obj.source === "string" && obj.source.trim().length > 0 &&
+    typeof obj.retrieved_at === "string" && Number.isFinite(Date.parse(obj.retrieved_at)) &&
+    typeof obj.data_status === "string" && DATA_STATUSES.includes(obj.data_status as DataStatus) &&
+    Array.isArray(obj.items) && obj.items.every((item) =>
+      item !== null && typeof item === "object" && !Array.isArray(item)) &&
+    (obj.next_cursor === null || typeof obj.next_cursor === "string")
+  );
 }
+
+const DATA_STATUSES: readonly DataStatus[] = [
+  "ok", "empty", "stale", "malformed", "not_found", "forbidden", "error", "accepted",
+];
 
 function stateFromEnvelope(envelope: DataProductEnvelope): ConsumerLoadState {
-  if (envelope.data_status === "malformed") return "error";
-  if (envelope.data_status === "empty" || envelope.items.length === 0) return "empty";
-  if (envelope.data_status === "stale") return "stale";
-  return "ready";
-}
-
-async function defaultNodeFixtureLoader(productId: string): Promise<DataProductEnvelope> {
-  const { readFile } = await import("node:fs/promises");
-  const { fileURLToPath } = await import("node:url");
-  const { dirname, join } = await import("node:path");
-  const here = dirname(fileURLToPath(import.meta.url));
-  // src/data-products -> ../../fixtures/data-products
-  const path = join(here, "..", "..", "fixtures", "data-products", `${productId}.json`);
-  const raw = await readFile(path, "utf8");
-  const parsed = JSON.parse(raw) as unknown;
-  if (!isDataProductEnvelope(parsed)) {
-    throw new Error(`Fixture for ${productId} is not a valid envelope`);
+  switch (envelope.data_status) {
+    case "ok": return envelope.items.length === 0 ? "empty" : "ready";
+    case "empty": return "empty";
+    case "stale": return "stale";
+    case "not_found":
+    case "accepted": return "unavailable";
+    case "malformed":
+    case "forbidden":
+    case "error":
+    default: return "error";
   }
-  return parsed;
 }
 
 function preferFixturesEnv(): boolean {
@@ -135,26 +141,23 @@ function isTimeoutError(err: unknown): boolean {
   return /timeout|aborted/i.test(message);
 }
 
-function combineSignals(
-  timeoutSignal: AbortSignal,
-  userSignal?: AbortSignal,
-): AbortSignal {
-  if (!userSignal) return timeoutSignal;
-  if (typeof AbortSignal.any === "function") {
-    return AbortSignal.any([userSignal, timeoutSignal]);
-  }
-  return userSignal;
-}
-
 function baseResult(
   productId: string,
   partial: Omit<ProductLoadResult, "productId" | "freeOnly" | "allowExternalWrites">,
 ): ProductLoadResult {
+  // Failure/pending envelopes must not expose records through any consumer,
+  // including fixtures and timeout fallback. Keep successful/stale data intact.
+  const envelopeState = partial.envelope ? stateFromEnvelope(partial.envelope) : null;
+  const suppressEnvelope = envelopeState === "error" || envelopeState === "unavailable";
   return {
     productId,
     freeOnly: true,
     allowExternalWrites: false,
     ...partial,
+    ...(suppressEnvelope ? {
+      envelope: null,
+      errorMessage: partial.errorMessage ?? sanitizeUserFacingMessage("generic"),
+    } : {}),
   };
 }
 
@@ -173,7 +176,14 @@ export async function fetchProductRecords(
   }
 
   const useFixtures = options.useFixtures ?? preferFixturesEnv();
-  const loadFixture = options.loadFixture ?? defaultNodeFixtureLoader;
+  const fixtureLoader = options.loadFixture ?? defaultNodeFixtureLoader;
+  const loadFixture = async (id: string) => {
+    const envelope = await fixtureLoader(id);
+    if (!isDataProductEnvelope(envelope) || envelope.schema_version !== product.schemaVersion) {
+      throw new Error("Invalid fixture envelope");
+    }
+    return envelope;
+  };
 
   if (useFixtures) {
     try {
@@ -220,17 +230,12 @@ export async function fetchProductRecords(
     }
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  const signal = combineSignals(controller.signal, options.signal);
-
   try {
-    const response = await fetchImpl(url, {
+    const { response, body } = await fetchJsonWithTimeout(url, {
       method: "GET",
       headers: { Accept: "application/json" },
-      signal,
-    });
-    clearTimeout(timer);
+      signal: options.signal,
+    }, timeoutMs, fetchImpl);
 
     if (!response.ok) {
       try {
@@ -254,8 +259,7 @@ export async function fetchProductRecords(
       }
     }
 
-    const body = (await response.json()) as unknown;
-    if (!isDataProductEnvelope(body)) {
+    if (!isDataProductEnvelope(body) || body.schema_version !== product.schemaVersion) {
       return baseResult(productId, {
         state: "error",
         envelope: null,
@@ -271,7 +275,6 @@ export async function fetchProductRecords(
       source: "api",
     });
   } catch (err) {
-    clearTimeout(timer);
     const timedOut = isTimeoutError(err);
 
     try {
@@ -325,18 +328,13 @@ export async function fetchProductHealth(
   const baseUrl = (options.baseUrl ?? configuredBaseUrl(product.id, product.baseUrl)).replace(/\/$/, "");
   const fetchImpl = options.fetchImpl ?? globalThis.fetch;
   const timeoutMs = options.timeoutMs ?? 2000;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetchImpl(`${baseUrl}/healthz`, {
+    const { response, body } = await fetchJsonWithTimeout(`${baseUrl}/healthz`, {
       method: "GET",
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    const body = await response.json();
+      signal: options.signal,
+    }, timeoutMs, fetchImpl, true);
     return { ok: response.ok, body };
   } catch {
-    clearTimeout(timer);
     return {
       ok: false,
       body: null,

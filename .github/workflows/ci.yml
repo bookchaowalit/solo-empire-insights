@@ -21,6 +21,8 @@ jobs:
       - run: npm ci
       - name: Typecheck
         run: npm run typecheck
+      - name: Verify generated browser bundle
+        run: npm run check:browser
       - name: Contract and browser-bundle tests
         run: npm test
       - name: Syntax-check static scripts

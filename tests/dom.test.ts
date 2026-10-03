@@ -10,6 +10,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 import { Window } from "happy-dom";
+import { DATA_PRODUCT_CATALOG, getProduct } from "../src/data-products/catalog.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const bundleSource = await readFile(join(root, "js", "data-products-browser.js"), "utf8");
@@ -20,9 +21,9 @@ type Api = {
   mountProductPage: (id: string, root: unknown) => Promise<void>;
 };
 
-function envelope(productId: string, items: Array<Record<string, unknown>>, dataStatus = "fresh") {
+function envelope(productId: string, items: Array<Record<string, unknown>>, dataStatus = "ok") {
   return {
-    schema_version: `${productId}.v1`,
+    schema_version: getProduct(productId)!.schemaVersion,
     source: `book-${productId}-data`,
     retrieved_at: "2026-09-01T00:00:00Z",
     data_status: dataStatus,
@@ -46,6 +47,18 @@ function mount(handler: Handler) {
 }
 
 describe("mountProductPage", () => {
+  it("never renders records returned with failure or pending statuses", async () => {
+    for (const status of ["error", "forbidden", "malformed", "not_found", "accepted"]) {
+      const { api, app } = mount(async () =>
+        json(envelope("crypto", [{ coin_id: "blocked-record-marker", price: 123 }], status)),
+      );
+      await api.mountProductPage("crypto", app);
+      assert.ok(!app.textContent!.includes("blocked-record-marker"), status);
+      assert.ok(app.querySelector("table") === null, status);
+      assert.match(app.querySelector(".status-banner")!.className, /\bbad\b/, status);
+    }
+  });
+
   it("shows a loading banner and aria-busy until the read settles, then renders rows", async () => {
     let release!: () => void;
     const gate = new Promise<void>((resolve) => (release = resolve));
@@ -136,6 +149,20 @@ describe("mountProductPage", () => {
 });
 
 describe("mountDashboard", () => {
+  it("neither displays nor counts error/forbidden records as healthy", async () => {
+    for (const status of ["error", "forbidden"]) {
+      const { api, app } = mount(async (url) => {
+        const product = DATA_PRODUCT_CATALOG.find((p) => p.port === Number(new URL(url).port))!;
+        return json(envelope(product.id, [{ coin_id: "blocked-record-marker", record_id: "blocked-record-marker" }], status));
+      });
+      await api.mountDashboard(app);
+      assert.ok(!app.textContent!.includes("blocked-record-marker"), status);
+      assert.equal(app.querySelectorAll("li").length, 0, status);
+      assert.match(app.querySelector(".status-banner")!.textContent!, /^0\/9 products loaded/, status);
+      assert.match(app.querySelector(".status-banner")!.className, /\bbad\b/, status);
+    }
+  });
+
   it("renders one card per product and a banner that reflects how many loaded", async () => {
     const { api, app } = mount(async (url) => {
       if (url.startsWith("http://127.0.0.1:8101/")) return json(envelope("crypto", [{ coin_id: "bitcoin", currency: "usd", price: "1" }]));
@@ -159,7 +186,8 @@ describe("mountDashboard", () => {
     const { api, app } = mount(async (url) => {
       if (url.startsWith("http://127.0.0.1:8101/")) return json(envelope("crypto", [{ coin_id: "dust", currency: "usd", price: 0 }]));
       if (url.includes("/v1/records")) {
-        return json(envelope("stocks", [{ symbol: "FLAT", price: "10", change_pct: 0, project: "pool", apy: 0 }]));
+        const product = DATA_PRODUCT_CATALOG.find((p) => p.port === Number(new URL(url).port))!;
+        return json(envelope(product.id, [{ symbol: "FLAT", price: "10", change_pct: 0, project: "pool", apy: 0 }]));
       }
       return new Response("down", { status: 503 });
     });
@@ -178,7 +206,8 @@ describe("mountDashboard", () => {
 
     const up = mount(async (url) => {
       const port = Number(new URL(url).port);
-      return json(envelope(String(port), [{ record_id: "r" }]));
+      const product = DATA_PRODUCT_CATALOG.find((p) => p.port === port)!;
+      return json(envelope(product.id, [{ record_id: "r" }]));
     });
     await up.api.mountDashboard(up.app);
     assert.match(up.app.querySelector(".status-banner")!.className, /\bok\b/);

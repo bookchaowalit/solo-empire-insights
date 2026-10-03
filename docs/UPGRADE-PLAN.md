@@ -3,14 +3,11 @@
 ## Current state
 
 Score: 8/10 (7.5 after pass 2, 7 after pass 1, 5 before) — typed client,
-browser bundle, static page wiring and the rendered DOM states are under
-test; the static UI still duplicates client logic by hand.
+generated browser bundle, static page wiring and the rendered DOM states are
+under test; browser and Node consumers share the typed client.
 
 ## Backlog
 
-- P1: Generate `js/data-products-browser.js` from `src/data-products/` (e.g.
-  a tiny esbuild step) instead of keeping two hand-written copies; the parity
-  test in `tests/browser-bundle.test.ts` guards drift until then.
 - P2: Accessibility pass on the product tables (header scope is set; add
   focusable table wrapper and reduced-motion styles).
 - P2: `scripts/verify-browser-consumers.mjs` needs all local APIs up; add a
@@ -60,3 +57,19 @@ test; the static UI still duplicates client logic by hand.
   fields later records carry; columns are now the union of all records'
   keys. Nested values render as JSON instead of `[object Object]`.
   Regression tests in `tests/dom.test.ts`.
+
+## Done in this pass (shared client and bounded reads)
+
+- Generate `js/data-products-browser.js` with esbuild from
+  `src/data-products/browser.js`, importing the typed client and catalog.
+  Browser configuration/rendering stays in the adapter; only fixture transport
+  differs by platform. `npm run check:browser` guards generated output in CI.
+- Validate envelope fields, known statuses and the requested schema on API and
+  fixture paths. Failure statuses with records cannot become ready.
+  Their envelopes are suppressed before reaching consumers, so forbidden/error
+  records cannot appear in tables or cards; successful/stale records are retained.
+- Bound headers and JSON body reads with one deadline and abort race, including
+  health reads and browser fixtures. Cleanup timers/listeners on every exit.
+- Add regression coverage for failure states, invalid fields/schema and hanging
+  JSON bodies. Update older DOM mocks to the real `ok` status/product schemas
+  and the discovery fixture's non-contract `fixture` status to `stale`.

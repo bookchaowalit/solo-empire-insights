@@ -134,20 +134,34 @@ Requires Node.js 22.6+ (tests run TypeScript via `--experimental-strip-types`).
 
 ```bash
 npm ci
-npm run check   # typecheck + tests
+npm run build:browser  # regenerate the tracked static bundle after source edits
+npm run check          # typecheck + generated bundle freshness + tests
 ```
 
 Contract tests mock HTTP responses and never call real upstream providers.
-`tests/browser-bundle.test.ts` runs the hand-maintained
-`js/data-products-browser.js` in a sandbox and asserts its catalog and
-fallback behaviour match `src/data-products/`. There is no browser build step:
-edit both files together. `tests/static-site.test.ts` checks that every page's
+`tests/browser-bundle.test.ts` runs the generated
+`js/data-products-browser.js` in a sandbox and checks its public browser API.
+Edit `src/data-products/`, then run `npm run build:browser`; the typed client
+owns the catalog, envelope validation, state mapping and request deadlines.
+`browser.js` adds browser URL/fixture settings and rendering; the build swaps
+the Node fixture loader for `browser-fixture.ts`. CI runs
+`npm run check:browser` and fails if the committed bundle differs from source.
+`tests/static-site.test.ts` checks that every page's
 local assets exist; the site is served from the repository root, so do not add
 a `public/` copy of `js/`, `css/` or `fixtures/`. `tests/dom.test.ts` runs the
 bundle in a happy-dom window and checks what `mountDashboard` and
 `mountProductPage` render: loading/`aria-busy`, ready, empty, timeout and
 unavailable states, the dashboard banner (ok/warn/bad by how many products
 loaded) and HTML escaping of item keys and values.
+
+Envelope validation checks every required field, known statuses, object records,
+a parseable retrieval timestamp and the requested product's schema version.
+`error`, `forbidden` and `malformed` remain errors even with records;
+`not_found` and `accepted` are unavailable. Unknown statuses fail validation.
+Failure and pending envelopes expose no records to consumers or rendered tables,
+including fixture/fallback paths; `ok` and `stale` retain their records.
+The request timeout covers both response headers and JSON parsing, including
+health reads and browser fixture loads. A fallback has its own deadline.
 
 ## Layout
 

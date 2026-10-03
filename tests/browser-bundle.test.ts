@@ -1,7 +1,6 @@
 /**
- * The static pages load js/data-products-browser.js, a hand-maintained twin of
- * src/data-products. These tests run that bundle in a sandbox so the browser
- * path cannot silently drift from the typed client or its contract.
+ * The static pages load the generated js/data-products-browser.js. These tests
+ * exercise the real artifact, including its browser configuration and fixtures.
  */
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
@@ -40,6 +39,7 @@ function loadBundle(
     document: { querySelector: () => null },
     URLSearchParams,
     AbortController,
+    AbortSignal,
     setTimeout,
     clearTimeout,
     fetch: async (input: string, init?: RequestInit) => {
@@ -87,6 +87,30 @@ describe("browser bundle parity", () => {
 });
 
 describe("browser fetchProductRecords", () => {
+  it("uses the typed validation and failure state rules", async () => {
+    const fixture = JSON.parse(await fixtureText("crypto"));
+    for (const fields of [
+      { data_status: "error" }, { data_status: "forbidden" },
+      { data_status: "unknown" }, { retrieved_at: null },
+      { next_cursor: 42 }, { schema_version: "stock.v1" },
+    ]) {
+      const { api } = loadBundle(async () => new Response(JSON.stringify({ ...fixture, ...fields })));
+      const result = await api.fetchProductRecords("crypto", { useFixtures: false });
+      assert.equal(result.state, "error", JSON.stringify(fields));
+    }
+  });
+
+  it("bounds hanging JSON in both API and fixture responses", { timeout: 1000 }, async () => {
+    const { api } = loadBundle(async () =>
+      ({ ok: true, json: () => new Promise(() => {}) }) as Response,
+    );
+    const result = await api.fetchProductRecords("crypto", { useFixtures: false, timeoutMs: 10 });
+    assert.equal(result.state, "timeout");
+    assert.equal(result.source, "none");
+    const offline = await api.fetchProductRecords("crypto", { useFixtures: true, timeoutMs: 10 });
+    assert.equal(offline.state, "unavailable");
+  });
+
   it("reads live envelopes with GET /v1/records only", async () => {
     const body = await fixtureText("fx");
     const { api, calls } = loadBundle(async () => new Response(body, { status: 200 }));

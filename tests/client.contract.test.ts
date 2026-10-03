@@ -9,6 +9,7 @@ import {
   FREE_ONLY_DEFAULTS,
   fetchAllProducts,
   fetchProductRecords,
+  fetchProductHealth,
   isDataProductEnvelope,
   sanitizeUserFacingMessage,
 } from "../src/data-products/index.ts";
@@ -127,6 +128,67 @@ describe("sanitizeUserFacingMessage", () => {
 });
 
 describe("fetchProductRecords", () => {
+  it("never labels failure or pending statuses ready even when records exist", async () => {
+    const fixture = await loadFixture("crypto");
+    for (const data_status of ["error", "forbidden", "malformed", "not_found", "accepted"]) {
+      const result = await fetchProductRecords("crypto", {
+        useFixtures: false,
+        fetchImpl: async () => new Response(JSON.stringify({ ...fixture, data_status })),
+      });
+      assert.equal(result.state, data_status === "not_found" || data_status === "accepted" ? "unavailable" : "error", data_status);
+      assert.equal(result.envelope, null, data_status);
+      assert.equal(result.errorMessage, "Unable to load data product", data_status);
+    }
+  });
+
+  it("suppresses failure fixture records and preserves ok/stale records", async () => {
+    const fixture = await loadFixture("crypto");
+    for (const data_status of ["error", "forbidden", "malformed", "not_found", "accepted", "ok", "stale"]) {
+      const result = await fetchProductRecords("crypto", {
+        useFixtures: true,
+        loadFixture: () => ({ ...fixture, data_status }),
+      });
+      if (data_status === "ok" || data_status === "stale") {
+        assert.deepEqual(result.envelope?.items, fixture.items, data_status);
+      } else {
+        assert.equal(result.envelope, null, data_status);
+      }
+    }
+  });
+
+  it("rejects invalid envelope fields and the wrong product schema", async () => {
+    const fixture = await loadFixture("crypto");
+    for (const fields of [
+      { schema_version: "stock.v1" }, { schema_version: "" }, { source: "" },
+      { retrieved_at: null }, { retrieved_at: "not-a-date" },
+      { data_status: "unknown" }, { data_status: null }, { next_cursor: 42 },
+      { items: [null] }, { items: ["record"] },
+    ]) {
+      const result = await fetchProductRecords("crypto", {
+        useFixtures: false,
+        fetchImpl: async () => new Response(JSON.stringify({ ...fixture, ...fields })),
+      });
+      assert.equal(result.state, "error", JSON.stringify(fields));
+      assert.equal(result.envelope, null);
+    }
+  });
+
+  it("bounds a hanging response body even when fetch ignores abort", { timeout: 1000 }, async () => {
+    let signal: AbortSignal | null | undefined;
+    const fetchImpl: typeof fetch = async (_input, init) => {
+      signal = init?.signal;
+      return { ok: true, json: () => new Promise(() => {}) } as Response;
+    };
+    const result = await fetchProductRecords("crypto", {
+      useFixtures: false, fetchImpl, loadFixture, timeoutMs: 10,
+    });
+    assert.equal(signal?.aborted, true);
+    assert.equal(result.state, "timeout");
+    assert.equal(result.source, "fixture");
+    const health = await fetchProductHealth("crypto", { useFixtures: false, fetchImpl, timeoutMs: 10 });
+    assert.equal(health.ok, false);
+  });
+
   it("uses offline fixtures without network when useFixtures=true", async () => {
     let networkCalls = 0;
     const fetchImpl: typeof fetch = async () => {
@@ -330,9 +392,10 @@ describe("fetchProductRecords", () => {
 
   it("browser bundle keeps free-only flags and safe messaging", async () => {
     const browser = await readFile(join(root, "js", "data-products-browser.js"), "utf8");
-    assert.match(browser, /FREE_ONLY:\s*true/);
-    assert.match(browser, /ALLOW_EXTERNAL_WRITES:\s*false/);
-    assert.match(browser, /ALLOW_PAID_PROVIDERS:\s*false/);
+    // The browser API's actual flags are verified in browser-bundle.test.ts.
+    assert.match(browser, /FREE_ONLY:/);
+    assert.match(browser, /ALLOW_EXTERNAL_WRITES:/);
+    assert.match(browser, /ALLOW_PAID_PROVIDERS:/);
     assert.match(browser, /sanitizeUserFacingMessage/);
     assert.match(browser, /aria-live/);
     assert.equal(browser.includes("scraper-dashboard"), false);

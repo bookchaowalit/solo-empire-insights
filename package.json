@@ -5,12 +5,15 @@
   "type": "module",
   "description": "Consumer for free-only local data-product APIs (ports 8101–8110).",
   "scripts": {
+    "build:browser": "node scripts/build-browser.mjs",
+    "check:browser": "node scripts/build-browser.mjs --check",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm test"
+    "check": "npm run typecheck && npm run check:browser && npm test"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
+    "esbuild": "^0.28.2",
     "happy-dom": "^20.14.5",
     "typescript": "^5.8.0"
   },
